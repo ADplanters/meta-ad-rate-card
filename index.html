@@ -244,20 +244,32 @@
           <!-- 빠른 프리셋 및 계정 추가 버튼 -->
           <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
             <span class="text-xs font-bold text-slate-600">정산 시나리오:</span>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onclick="loadPreset('todayCase')"
-                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition cursor-pointer"
+                id="tab-todayCase"
+                onclick="switchScenario('todayCase')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer"
               >
-                오늘 사례 (75만 · 100만 · 75만)
+                <span>오늘 사례 (75만 · 100만 · 75만)</span>
+                <span id="badge-todayCase" class="hidden px-1.5 py-0.5 text-[10px] font-bold rounded-md">수정됨</span>
               </button>
               <button
                 type="button"
-                onclick="loadPreset('baseCase')"
-                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition cursor-pointer"
+                id="tab-baseCase"
+                onclick="switchScenario('baseCase')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer"
               >
-                초기 기준 (월 50만 × 3건)
+                <span>초기 기준 (월 50만 × 3건)</span>
+                <span id="badge-baseCase" class="hidden px-1.5 py-0.5 text-[10px] font-bold rounded-md">수정됨</span>
+              </button>
+              <button
+                type="button"
+                onclick="restoreCurrentScenarioDefault()"
+                title="현재 선택된 시나리오만 기본 세팅으로 되돌리기"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 transition cursor-pointer"
+              >
+                기본값 복원
               </button>
               <button
                 type="button"
@@ -337,6 +349,7 @@
             <button
               type="button"
               onclick="resetSimulator()"
+              title="현재 시나리오 및 저장된 전체 시나리오를 초기 기본값으로 되돌립니다"
               class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition cursor-pointer"
             >
               초기화
@@ -440,14 +453,134 @@
     ];
 
     const PERIOD_MONTHS = 2; // 기본 2개월 기준 정산
+    const STORAGE_KEY = 'adplanters_noah_scenarios_v1';
 
-    // 시뮬레이터 상태 (오늘 사례: 75만 / 100만 / 75만 원)
-    let clientSlots = [
-      { id: 1, name: '신규 수주 건 1', monthlyBudget: 750000 },
-      { id: 2, name: '신규 수주 건 2', monthlyBudget: 1000000 },
-      { id: 3, name: '신규 수주 건 3', monthlyBudget: 750000 }
-    ];
-    let nextSlotId = 4;
+    // 시나리오별 원래 초기 기본값 정의 (복원/초기화 비교용)
+    const DEFAULT_SCENARIO_SLOTS = {
+      todayCase: [
+        { id: 1, name: '신규 수주 건 1', monthlyBudget: 750000 },
+        { id: 2, name: '신규 수주 건 2', monthlyBudget: 1000000 },
+        { id: 3, name: '신규 수주 건 3', monthlyBudget: 750000 }
+      ],
+      baseCase: [
+        { id: 1, name: '기본 수주 건 1', monthlyBudget: 500000 },
+        { id: 2, name: '기본 수주 건 2', monthlyBudget: 500000 },
+        { id: 3, name: '기본 수주 건 3', monthlyBudget: 500000 }
+      ]
+    };
+
+    function cloneSlots(slots) {
+      return slots.map((s, idx) => ({
+        id: Number.isFinite(s.id) ? s.id : idx + 1,
+        name: String(s.name || `수주 건 ${idx + 1}`),
+        monthlyBudget: Number(s.monthlyBudget) || 500000
+      }));
+    }
+
+    function getMaxSlotId(slotsMap) {
+      let maxId = 3;
+      Object.values(slotsMap).forEach((list) => {
+        if (Array.isArray(list)) {
+          list.forEach((s) => {
+            if (typeof s.id === 'number' && s.id > maxId) {
+              maxId = s.id;
+            }
+          });
+        }
+      });
+      return maxId;
+    }
+
+    // 시나리오별 독립 상태 (메모리 + localStorage 연동)
+    let activeScenarioKey = 'todayCase';
+    let scenarioSlotsMap = {
+      todayCase: cloneSlots(DEFAULT_SCENARIO_SLOTS.todayCase),
+      baseCase: cloneSlots(DEFAULT_SCENARIO_SLOTS.baseCase)
+    };
+    let nextSlotId = getMaxSlotId(scenarioSlotsMap) + 1;
+
+    function getActiveSlots() {
+      if (!scenarioSlotsMap[activeScenarioKey]) {
+        scenarioSlotsMap[activeScenarioKey] = cloneSlots(DEFAULT_SCENARIO_SLOTS[activeScenarioKey] || DEFAULT_SCENARIO_SLOTS.todayCase);
+      }
+      return scenarioSlotsMap[activeScenarioKey];
+    }
+
+    function isScenarioModified(key) {
+      const current = scenarioSlotsMap[key];
+      const base = DEFAULT_SCENARIO_SLOTS[key];
+      if (!Array.isArray(current) || !Array.isArray(base)) return false;
+      if (current.length !== base.length) return true;
+      return current.some((item, idx) => {
+        const origin = base[idx];
+        return item.name !== origin.name || Number(item.monthlyBudget) !== Number(origin.monthlyBudget);
+      });
+    }
+
+    function saveStateToStorage() {
+      try {
+        const payload = {
+          activeScenarioKey,
+          scenarioSlotsMap,
+          nextSlotId
+        };
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (err) {
+        // 스토리지 제한 환경에서도 메모리 상태는 정상 유지
+      }
+    }
+
+    function loadStateFromStorage() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.scenarioSlotsMap && typeof parsed.scenarioSlotsMap === 'object') {
+          if (Array.isArray(parsed.scenarioSlotsMap.todayCase) && parsed.scenarioSlotsMap.todayCase.length > 0) {
+            scenarioSlotsMap.todayCase = cloneSlots(parsed.scenarioSlotsMap.todayCase);
+          }
+          if (Array.isArray(parsed.scenarioSlotsMap.baseCase) && parsed.scenarioSlotsMap.baseCase.length > 0) {
+            scenarioSlotsMap.baseCase = cloneSlots(parsed.scenarioSlotsMap.baseCase);
+          }
+        }
+        if (parsed && (parsed.activeScenarioKey === 'todayCase' || parsed.activeScenarioKey === 'baseCase')) {
+          activeScenarioKey = parsed.activeScenarioKey;
+        }
+        nextSlotId = getMaxSlotId(scenarioSlotsMap) + 1;
+        if (parsed && typeof parsed.nextSlotId === 'number' && parsed.nextSlotId >= nextSlotId) {
+          nextSlotId = parsed.nextSlotId;
+        }
+      } catch (err) {
+        // 파싱 오류 시 기본값 유지
+      }
+    }
+
+    function renderScenarioTabs() {
+      const keys = ['todayCase', 'baseCase'];
+      keys.forEach((key) => {
+        const tabBtn = document.getElementById(`tab-${key}`);
+        const badgeEl = document.getElementById(`badge-${key}`);
+        const isActive = activeScenarioKey === key;
+        const modified = isScenarioModified(key);
+
+        if (tabBtn) {
+          tabBtn.className = isActive
+            ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white border border-indigo-600 shadow-sm transition cursor-pointer'
+            : 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition cursor-pointer';
+        }
+
+        if (badgeEl) {
+          if (modified) {
+            badgeEl.classList.remove('hidden');
+            badgeEl.className = isActive
+              ? 'px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-white/20 text-white'
+              : 'px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-amber-100 text-amber-800';
+          } else {
+            badgeEl.classList.add('hidden');
+          }
+        }
+      });
+    }
 
     function formatKRW(amount) {
       const rounded = Math.round(amount || 0);
@@ -524,7 +657,9 @@
       const container = document.getElementById('clientSlotsContainer');
       if (!container) return;
 
-      container.innerHTML = clientSlots.map((slot, idx) => {
+      const slots = getActiveSlots();
+
+      container.innerHTML = slots.map((slot, idx) => {
         const monthlyFee = getBaseMonthlyFee(slot.monthlyBudget);
         const twoMonthFee = monthlyFee * PERIOD_MONTHS;
         const tierLabel = getTierName(slot.monthlyBudget);
@@ -540,8 +675,8 @@
                   type="text"
                   value="${escapeHtml(slot.name)}"
                   aria-label="클라이언트 이름"
-                  onchange="updateSlotName(${slot.id}, this.value)"
-                  class="font-bold text-slate-900 text-sm bg-transparent border-b border-transparent focus:border-indigo-500 focus:outline-none px-1 py-0.5 truncate w-full max-w-[180px]"
+                  oninput="updateSlotName(${slot.id}, this.value)"
+                  class="font-bold text-slate-900 text-sm bg-transparent border-b border-slate-200 focus:border-indigo-500 focus:outline-none px-1 py-0.5 truncate w-full max-w-[180px]"
                 />
                 <span class="hidden sm:inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 shrink-0">
                   ${tierLabel}
@@ -553,7 +688,7 @@
                   <div class="text-xs font-extrabold text-slate-900">월 ${formatKRW(monthlyFee)}</div>
                   <div class="text-[11px] text-indigo-600 font-semibold">2개월 ${formatKRW(twoMonthFee)}</div>
                 </div>
-                ${clientSlots.length > 1 ? `
+                ${slots.length > 1 ? `
                   <button
                     type="button"
                     onclick="removeClientSlot(${slot.id})"
@@ -594,10 +729,11 @@
 
     // 3. 시뮬레이터 계산 및 요약 카드 업데이트 (할인 미적용)
     function updateSimulator() {
+      const slots = getActiveSlots();
       let totalMonthlyBudget = 0;
       let totalMonthlyFee = 0;
 
-      clientSlots.forEach((slot) => {
+      slots.forEach((slot) => {
         totalMonthlyBudget += slot.monthlyBudget;
         totalMonthlyFee += getBaseMonthlyFee(slot.monthlyBudget);
       });
@@ -605,7 +741,7 @@
       const totalTwoMonthBudget = totalMonthlyBudget * PERIOD_MONTHS;
       const totalTwoMonthFee = totalMonthlyFee * PERIOD_MONTHS;
 
-      document.getElementById('summaryClientCount').textContent = `${clientSlots.length}개 계정`;
+      document.getElementById('summaryClientCount').textContent = `${slots.length}개 계정`;
       document.getElementById('summaryMonthlyBudget').textContent = formatManWon(totalMonthlyBudget);
       document.getElementById('summaryTwoMonthBudget').textContent = formatManWon(totalTwoMonthBudget);
       document.getElementById('summaryMonthlyFee').textContent = formatKRW(totalMonthlyFee);
@@ -615,17 +751,24 @@
       if (compEl) {
         compEl.textContent = `오늘 입금된 30만 원 건은 그대로 존중해 진행하며, 다음 신규 수주 및 연장 건부터 월 대행비 ${formatKRW(totalMonthlyFee)} (2개월 기준 ${formatKRW(totalTwoMonthFee)}) 기준으로 정산합니다.`;
       }
+
+      renderScenarioTabs();
+      saveStateToStorage();
     }
 
     function updateSlotName(id, newName) {
-      const target = clientSlots.find((s) => s.id === id);
+      const slots = getActiveSlots();
+      const target = slots.find((s) => s.id === id);
       if (target) {
-        target.name = newName.trim() || '클라이언트';
+        target.name = newName;
+        renderScenarioTabs();
+        saveStateToStorage();
       }
     }
 
     function updateSlotBudget(id, newBudget) {
-      const target = clientSlots.find((s) => s.id === id);
+      const slots = getActiveSlots();
+      const target = slots.find((s) => s.id === id);
       if (target) {
         target.monthlyBudget = newBudget;
         renderClientSlots();
@@ -634,9 +777,10 @@
     }
 
     function addClientSlot() {
-      clientSlots.push({
+      const slots = getActiveSlots();
+      slots.push({
         id: nextSlotId++,
-        name: `신규 수주 건 ${clientSlots.length + 1}`,
+        name: `신규 수주 건 ${slots.length + 1}`,
         monthlyBudget: 750000
       });
       renderClientSlots();
@@ -644,51 +788,70 @@
     }
 
     function removeClientSlot(id) {
-      if (clientSlots.length <= 1) return;
-      clientSlots = clientSlots.filter((s) => s.id !== id);
+      const slots = getActiveSlots();
+      if (slots.length <= 1) return;
+      scenarioSlotsMap[activeScenarioKey] = slots.filter((s) => s.id !== id);
       renderClientSlots();
       updateSimulator();
     }
 
-    function loadPreset(presetKey) {
-      if (presetKey === 'todayCase') {
-        clientSlots = [
-          { id: 1, name: '신규 수주 건 1', monthlyBudget: 750000 },
-          { id: 2, name: '신규 수주 건 2', monthlyBudget: 1000000 },
-          { id: 3, name: '신규 수주 건 3', monthlyBudget: 750000 }
-        ];
-      } else if (presetKey === 'baseCase') {
-        clientSlots = [
-          { id: 1, name: '기본 수주 건 1', monthlyBudget: 500000 },
-          { id: 2, name: '기본 수주 건 2', monthlyBudget: 500000 },
-          { id: 3, name: '기본 수주 건 3', monthlyBudget: 500000 }
-        ];
+    // 탭 전환 시 각 시나리오의 수정 상태를 덮어쓰지 않고 그대로 불러옴
+    function switchScenario(presetKey) {
+      if (!DEFAULT_SCENARIO_SLOTS[presetKey]) return;
+      activeScenarioKey = presetKey;
+      if (!Array.isArray(scenarioSlotsMap[presetKey]) || scenarioSlotsMap[presetKey].length === 0) {
+        scenarioSlotsMap[presetKey] = cloneSlots(DEFAULT_SCENARIO_SLOTS[presetKey]);
       }
-      nextSlotId = clientSlots.length + 1;
       renderClientSlots();
       updateSimulator();
-      showToast('시나리오가 적용되었습니다.');
+      const label = presetKey === 'todayCase' ? '오늘 사례' : '초기 기준';
+      showToast(`${label} 시나리오로 전환했습니다.`);
     }
 
+    // 현재 선택된 시나리오만 기본 세팅으로 되돌리기
+    function restoreCurrentScenarioDefault() {
+      const baseList = DEFAULT_SCENARIO_SLOTS[activeScenarioKey] || DEFAULT_SCENARIO_SLOTS.todayCase;
+      scenarioSlotsMap[activeScenarioKey] = cloneSlots(baseList);
+      nextSlotId = getMaxSlotId(scenarioSlotsMap) + 1;
+      renderClientSlots();
+      updateSimulator();
+      showToast('현재 시나리오를 기본값으로 복원했습니다.');
+    }
+
+    // 전체 시나리오를 기본 세팅으로 초기화
     function resetSimulator() {
-      loadPreset('todayCase');
+      scenarioSlotsMap = {
+        todayCase: cloneSlots(DEFAULT_SCENARIO_SLOTS.todayCase),
+        baseCase: cloneSlots(DEFAULT_SCENARIO_SLOTS.baseCase)
+      };
+      nextSlotId = getMaxSlotId(scenarioSlotsMap) + 1;
+      try {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } catch (err) {
+        // 무시
+      }
+      renderClientSlots();
+      updateSimulator();
+      showToast('모든 시나리오가 초기 기본값으로 초기화되었습니다.');
     }
 
     // 파트너 공유용 정산 요약 텍스트 복사
     function copySummaryText() {
-      const totalMonthlyBudget = clientSlots.reduce((acc, s) => acc + s.monthlyBudget, 0);
-      const totalMonthlyFee = clientSlots.reduce((acc, s) => acc + getBaseMonthlyFee(s.monthlyBudget), 0);
+      const slots = getActiveSlots();
+      const totalMonthlyBudget = slots.reduce((acc, s) => acc + s.monthlyBudget, 0);
+      const totalMonthlyFee = slots.reduce((acc, s) => acc + getBaseMonthlyFee(s.monthlyBudget), 0);
       const totalTwoMonthBudget = totalMonthlyBudget * PERIOD_MONTHS;
       const totalTwoMonthFee = totalMonthlyFee * PERIOD_MONTHS;
 
-      const detailLines = clientSlots.map((s, idx) => {
+      const detailLines = slots.map((s, idx) => {
+        const displayName = (s.name && s.name.trim()) ? s.name.trim() : `수주 건 ${idx + 1}`;
         const mFee = getBaseMonthlyFee(s.monthlyBudget);
-        return `  ${idx + 1}. ${s.name}: 월 예산 ${formatManWon(s.monthlyBudget)} → 월 대행비 ${formatKRW(mFee)} / 2개월 기준 ${formatKRW(mFee * PERIOD_MONTHS)}`;
+        return `  ${idx + 1}. ${displayName}: 월 예산 ${formatManWon(s.monthlyBudget)} → 월 대행비 ${formatKRW(mFee)} / 2개월 기준 ${formatKRW(mFee * PERIOD_MONTHS)}`;
       }).join('\n');
 
       const text = [
         `[애드플랜터스 × 노아유니버스컴퍼니] 메타광고 정산 안내`,
-        `- 진행 계정: ${clientSlots.length}개 (2개월 운영 기준)`,
+        `- 진행 계정: ${slots.length}개 (2개월 운영 기준)`,
         `- 월 광고비 합계: ${formatManWon(totalMonthlyBudget)} (2개월 기준 ${formatManWon(totalTwoMonthBudget)})`,
         detailLines,
         `- 월 대행비 합계: ${formatKRW(totalMonthlyFee)}`,
@@ -739,7 +902,9 @@
       const yearEl = document.getElementById('currentYear');
       if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+      loadStateFromStorage();
       renderPricingTable();
+      renderScenarioTabs();
       renderClientSlots();
       updateSimulator();
     });
