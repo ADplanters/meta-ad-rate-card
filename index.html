@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>애드플랜터스(AdPlanters) | 메타광고 대행 파트너십 단가표 & 정산 시뮬레이터</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans KR"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef4ff',
+              100: '#dce7ff',
+              200: '#c0d4ff',
+              500: '#3b6ef6',
+              600: '#2554e6',
+              700: '#1d41c4',
+              800: '#1e379e',
+              900: '#1e327d',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    /* 커스텀 스크롤바 및 범위 슬라이더 스타일 */
+    input[type="range"].brand-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"].brand-slider::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 9999px;
+      background: #e2e8f0;
+    }
+    input[type="range"].brand-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      margin-top: -6px;
+      background-color: #2554e6;
+      height: 20px;
+      width: 20px;
+      border-radius: 9999px;
+      border: 3px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(37, 84, 230, 0.35);
+      transition: transform 0.15s ease;
+    }
+    input[type="range"].brand-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background-color: #ffffff !important;
+      }
+      .print-shadow-none {
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-brand-100 selection:text-brand-800">
+
+  <!-- 상단 네비게이션 / 파트너십 배너 -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <!-- 애드플랜터스 로고 마크 -->
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-700 flex items-center justify-center text-white font-extrabold text-sm shadow-sm shrink-0">
+          AP
+        </div>
+        <div class="truncate">
+          <span class="font-bold text-slate-900 text-base sm:text-lg tracking-tight">애드플랜터스(AdPlanters)</span>
+          <span class="hidden md:inline-block mx-2 text-slate-300">|</span>
+          <span class="hidden md:inline-block text-xs sm:text-sm font-medium text-slate-500">노아유니버스컴퍼니 전용 메타광고 파트너십 단가표</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          onclick="copySummaryText()"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200 transition cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <span>정산 요약 복사</span>
+        </button>
+        <button
+          type="button"
+          onclick="window.print()"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 transition cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          <span class="hidden sm:inline">인쇄 / PDF</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 복사/안내 메시지 토스트 -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden max-w-sm bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 text-sm flex items-center gap-3">
+    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
+    <span id="toastMessage">클립보드에 복사되었습니다.</span>
+  </div>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- 히어로 섹션 -->
+    <section class="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-slate-200/80 shadow-sm print-shadow-none">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div class="space-y-3 max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold">
+            <span>PARTNERSHIP PRICING GUIDE</span>
+            <span>•</span>
+            <span>노아유니버스컴퍼니 × 애드플랜터스</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
+            메타광고 대행 단가표 &amp; <span class="text-brand-600">월별 정산 시뮬레이터</span>
+          </h1>
+          <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+            숨고 명예고수 타이틀을 보유하신 <strong>노아유니버스컴퍼니</strong>의 탄탄한 수주력과 콘텐츠·인스타그램 기술 역량에,
+            <strong>애드플랜터스</strong>의 실리적인 메타광고 세팅·최적화·운영을 결합한 파트너 전용 합리적 정산 기준입니다.
+            월 광고예산 규모와 2개월 패키지, 누적 물량에 따라 투명하게 연동되도록 설계했습니다.
+          </p>
+        </div>
+
+        <!-- 핵심 파트너십 기준 요약 카드 -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:w-72 shrink-0">
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+            <div class="text-xs font-medium text-slate-500">기준 베이스 (월 50만)</div>
+            <div class="text-lg font-extrabold text-slate-900 mt-0.5">월 10만 원</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">2개월 광고비 100만 / 대행비 20만</div>
+          </div>
+          <div class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3.5">
+            <div class="text-xs font-medium text-indigo-700">기본 운영 단위</div>
+            <div class="text-lg font-extrabold text-indigo-700 mt-0.5">2개월 패키지</div>
+            <div class="text-[11px] text-indigo-600/80 mt-0.5">월 대행비 × 2개월 정산 기준</div>
+          </div>
+          <div class="col-span-2 sm:col-span-1 lg:col-span-1 bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+            <div class="text-xs font-medium text-slate-700">적용 원칙</div>
+            <div class="text-base font-extrabold text-slate-900 mt-0.5">차기·신규 건부터</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">기존 입금 건(30만 원) 존중</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. 월 광고예산 구간별 기본 마크업 피 단가표 -->
+    <section class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">01. PRICING TABLE</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">월 광고예산 구간별 대행비 기준표</h2>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-500">
+          * 광고비와 대행비는 분리 정산되며, 임의 할인 없이 정액/정률 기준표대로 산정됩니다.
+        </p>
+      </div>
+
+      <!-- 단가표 -->
+      <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden print-shadow-none">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                <th class="py-4 px-5">월 메타 광고예산 구간</th>
+                <th class="py-4 px-5">월 대행비 (1개월)</th>
+                <th class="py-4 px-5">2개월 기준 광고비 / 대행비</th>
+                <th class="py-4 px-5">산정 기준</th>
+                <th class="py-4 px-5">세팅·최적화 운영 범위</th>
+              </tr>
+            </thead>
+            <tbody id="pricingTableBody" class="divide-y divide-slate-100 text-sm">
+              <!-- JS로 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 운영 기준 요약 카드 2종 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm print-shadow-none">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700">2개월 운영 기준</span>
+            <span class="text-xs font-semibold text-slate-500">월 대행비 × 2개월</span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-base">메타 알고리즘 학습 및 안정화 기간 반영</h3>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+            초기 세팅과 광고 효율 안정화를 고려해 <strong>2개월 단위로 기준 금액(월 대행비 × 2)</strong>을 산정하며, 월 광고예산이 커질수록 소재 교체·타겟 세분화·트래킹 점검 공수에 맞춰 대행비가 연동됩니다.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm print-shadow-none">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800">정산 적용 시점</span>
+            <span class="text-xs font-semibold text-indigo-700">기존 건 소급 미적용</span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-base">오늘 입금 건(30만 원) 존중 및 다음 신규/연장 건부터 적용</h3>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+            파트너십 신뢰를 위해 이미 입금 완료된 건은 소급 청구하지 않고 그대로 진행하며, <strong>다음 신규 수주 건 및 연장 건부터</strong> 본 구간별 단가표를 적용합니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 인터랙티브 월별 정산 시뮬레이터 -->
+    <section class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">02. SETTLEMENT CALCULATOR</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">메타광고 대행비 정산 계산기</h2>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-500">
+          클라이언트별 월 예산을 조절하거나 계정을 추가·삭제해 월 대행비와 2개월 총액을 계산하세요.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 좌측: 클라이언트 슬롯 추가 및 예산 설정 (7칸) -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5 print-shadow-none">
+          <!-- 빠른 프리셋 및 계정 추가 버튼 -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <span class="text-xs font-bold text-slate-600">정산 시나리오:</span>
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onclick="loadPreset('todayCase')"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition cursor-pointer"
+              >
+                오늘 사례 (75만 · 100만 · 75만)
+              </button>
+              <button
+                type="button"
+                onclick="loadPreset('baseCase')"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition cursor-pointer"
+              >
+                초기 기준 (월 50만 × 3건)
+              </button>
+              <button
+                type="button"
+                onclick="addClientSlot()"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
+              >
+                + 계정 추가
+              </button>
+            </div>
+          </div>
+
+          <!-- 클라이언트 목록 컨테이너 -->
+          <div id="clientSlotsContainer" class="space-y-3.5">
+            <!-- JS로 동적 생성 -->
+          </div>
+        </div>
+
+        <!-- 우측: 정산 결과 리포트 카드 (5칸) -->
+        <div class="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-lg print-shadow-none">
+          <div class="space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-300">SETTLEMENT SUMMARY</span>
+                <h3 class="text-lg font-bold text-white mt-0.5">구간별 정산 계산 결과</h3>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-200 border border-indigo-400/30">
+                정액/정률 기준
+              </span>
+            </div>
+
+            <!-- 세부 항목 -->
+            <div class="space-y-3 text-sm">
+              <div class="flex items-center justify-between text-slate-300">
+                <span>진행 계정 수</span>
+                <span id="summaryClientCount" class="font-semibold text-white">3개 계정</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-300">
+                <span>월 광고비 합계</span>
+                <span id="summaryMonthlyBudget" class="font-semibold text-white">250만 원</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-300">
+                <span>2개월 기준 광고비 합계</span>
+                <span id="summaryTwoMonthBudget" class="font-semibold text-slate-200">500만 원</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-300 border-t border-slate-800 pt-3">
+                <span>월 대행비 합계 (1개월)</span>
+                <span id="summaryMonthlyFee" class="text-base font-extrabold text-indigo-300">500,000원</span>
+              </div>
+            </div>
+
+            <!-- 2개월 기준 총 대행비 강조 박스 -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-300">2개월 기준 총 대행비</span>
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-500/30 text-indigo-200">월 대행비 × 2개월</span>
+              </div>
+              <div id="summaryFinalFee" class="text-3xl font-extrabold text-white tracking-tight">1,000,000원</div>
+            </div>
+
+            <!-- 오늘 기입금 및 적용 시점 안내 -->
+            <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-3.5 text-xs text-slate-200 leading-relaxed space-y-1">
+              <div class="font-bold text-indigo-300">적용 원칙 안내</div>
+              <p id="comparisonNote" class="text-slate-300">
+                오늘 입금해 주신 30만 원(월 10만 × 3건 기준)은 존중하여 그대로 반영하며, 다음 신규 수주 건 및 연장 건부터 본 구간별 기준표로 정산합니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="pt-6 mt-6 border-t border-slate-800 flex flex-col sm:flex-row gap-2.5 no-print">
+            <button
+              type="button"
+              onclick="copySummaryText()"
+              class="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition cursor-pointer text-center"
+            >
+              파트너 공유용 텍스트 복사
+            </button>
+            <button
+              type="button"
+              onclick="resetSimulator()"
+              class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition cursor-pointer"
+            >
+              초기화
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 파트너 커뮤니케이션 가이드 (노아유니버스컴퍼니 맞춤 안내) -->
+    <section class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-5 print-shadow-none">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">03. PARTNERSHIP GUIDE</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">노아유니버스컴퍼니 정산 조율 가이드</h2>
+        </div>
+        <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full self-start sm:self-auto">
+          기존 입금 건 존중 · 차기/신규 건 적용
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm text-slate-600 leading-relaxed">
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
+          <div class="font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+            <span>이번 입금 건(30만 원)은 그대로 진행</span>
+          </div>
+          <p>
+            오늘 입금해 주신 건은 소급해 추가 요청하지 않고 기존 흐름대로 깔끔하게 진행해 드립니다. 숨고 명예고수 타이틀을 보유한 노아유니버스컴퍼니의 수주 성과에 감사함을 전하며 부담 없이 시작합니다.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
+          <div class="font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+            <span>예산 구간별 세팅·최적화 공수 반영</span>
+          </div>
+          <p>
+            월 75만~100만 원 이상 광고예산은 세팅·소재 테스트·최적화 공수가 월 50만 원 이하 기준보다 커지므로, <strong>다음 신규 수주 및 연장 건부터</strong> 구간별 단가표(월 15만·20만·27만 원 및 150만 초과 시 18%)를 적용합니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-xs text-slate-400">
+    © <span id="currentYear">2026</span> AdPlanters(애드플랜터스). 노아유니버스컴퍼니 메타광고 운영 기준표.
+  </footer>
+
+  <script>
+    /**
+     * 월 광고예산 구간별 대행비 기준표 (할인 없음, 2개월 기준 = 월 대행비 × 2)
+     */
+    const PRICING_TIERS = [
+      {
+        id: 'tier-50',
+        label: '월 50만 원 이하',
+        monthlyFee: 100000,
+        twoMonthBudgetText: '2개월 광고비 100만 원 이하',
+        twoMonthFeeText: '2개월 대행비 20만 원',
+        rateText: '정액 월 10만 원',
+        scope: '기본 세팅 · 단일 캠페인 운영 · 주간 성과 점검'
+      },
+      {
+        id: 'tier-75',
+        label: '월 51만 ~ 75만 원',
+        monthlyFee: 150000,
+        twoMonthBudgetText: '2개월 광고비 102만~150만 원',
+        twoMonthFeeText: '2개월 대행비 30만 원',
+        rateText: '정액 월 15만 원',
+        scope: '광고세트 세분화 · 소재 교체 및 피로도 관리 · 전환 트래킹 확인'
+      },
+      {
+        id: 'tier-100',
+        label: '월 76만 ~ 100만 원',
+        monthlyFee: 200000,
+        twoMonthBudgetText: '2개월 광고비 152만~200만 원',
+        twoMonthFeeText: '2개월 대행비 40만 원',
+        rateText: '정액 월 20만 원',
+        scope: '소재 A/B 테스트 · 리타겟팅 세팅 · 예산 배분 및 주간 리포트'
+      },
+      {
+        id: 'tier-150',
+        label: '월 101만 ~ 150만 원',
+        monthlyFee: 270000,
+        twoMonthBudgetText: '2개월 광고비 202만~300만 원',
+        twoMonthFeeText: '2개월 대행비 54만 원',
+        rateText: '정액 월 27만 원',
+        scope: '퍼널별 캠페인 구성 · 고예산 효율 최적화 · 심화 운영 피드백'
+      },
+      {
+        id: 'tier-over',
+        label: '월 150만 원 초과',
+        monthlyFee: null, // 월 예산의 18%
+        twoMonthBudgetText: '2개월 광고비 300만 원 초과',
+        twoMonthFeeText: '2개월 대행비 (월 18% × 2)',
+        rateText: '월 예산의 18%',
+        scope: '세팅·최적화 공수 연동 · 다각도 소재 테스트 및 확장 운영'
+      }
+    ];
+
+    const PERIOD_MONTHS = 2; // 기본 2개월 기준 정산
+
+    // 시뮬레이터 상태 (오늘 사례: 75만 / 100만 / 75만 원)
+    let clientSlots = [
+      { id: 1, name: '신규 수주 건 1', monthlyBudget: 750000 },
+      { id: 2, name: '신규 수주 건 2', monthlyBudget: 1000000 },
+      { id: 3, name: '신규 수주 건 3', monthlyBudget: 750000 }
+    ];
+    let nextSlotId = 4;
+
+    function formatKRW(amount) {
+      const rounded = Math.round(amount || 0);
+      return rounded.toLocaleString('ko-KR') + '원';
+    }
+
+    function formatManWon(amount) {
+      const man = amount / 10000;
+      if (Number.isInteger(man)) {
+        return man.toLocaleString('ko-KR') + '만 원';
+      }
+      return man.toFixed(1) + '만 원';
+    }
+
+    // 월 광고예산에 따른 1개월 대행비 계산
+    function getBaseMonthlyFee(monthlyBudget) {
+      if (monthlyBudget <= 500000) return 100000;
+      if (monthlyBudget <= 750000) return 150000;
+      if (monthlyBudget <= 1000000) return 200000;
+      if (monthlyBudget <= 1500000) return 270000;
+      return Math.round(monthlyBudget * 0.18);
+    }
+
+    function getTierName(monthlyBudget) {
+      if (monthlyBudget <= 500000) return '월 50만 이하 (월 10만)';
+      if (monthlyBudget <= 750000) return '월 51~75만 (월 15만)';
+      if (monthlyBudget <= 1000000) return '월 76~100만 (월 20만)';
+      if (monthlyBudget <= 1500000) return '월 101~150만 (월 27만)';
+      return '월 150만 초과 (월 18%)';
+    }
+
+    // 1. 단가표 테이블 렌더링
+    function renderPricingTable() {
+      const tbody = document.getElementById('pricingTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = PRICING_TIERS.map((tier, index) => {
+        const isBase = index === 0;
+        const isHighlighted = index === 1 || index === 2;
+
+        const oneMonthText = tier.monthlyFee !== null
+          ? `<span class="font-bold text-slate-900">${formatKRW(tier.monthlyFee)}</span> <span class="text-xs text-slate-400">/ 월</span>`
+          : `<span class="font-bold text-slate-900">월 예산 × 18%</span> <span class="text-xs text-slate-400">/ 월</span>`;
+
+        return `
+          <tr class="${isHighlighted ? 'bg-indigo-50/25' : 'hover:bg-slate-50/70'} transition">
+            <td class="py-4 px-5 align-top">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-bold text-slate-900">${tier.label}</span>
+                ${isBase ? '<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">기준 베이스</span>' : ''}
+                ${isHighlighted ? '<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">주요 구간</span>' : ''}
+              </div>
+            </td>
+            <td class="py-4 px-5 align-top">${oneMonthText}</td>
+            <td class="py-4 px-5 align-top">
+              <div class="font-bold text-indigo-700">${tier.twoMonthFeeText}</div>
+              <div class="text-[11px] text-slate-500">${tier.twoMonthBudgetText}</div>
+            </td>
+            <td class="py-4 px-5 align-top">
+              <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700">
+                ${tier.rateText}
+              </span>
+            </td>
+            <td class="py-4 px-5 align-top text-xs sm:text-sm text-slate-600 max-w-xs">
+              ${tier.scope}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 2. 클라이언트 슬롯 렌더링
+    function renderClientSlots() {
+      const container = document.getElementById('clientSlotsContainer');
+      if (!container) return;
+
+      container.innerHTML = clientSlots.map((slot, idx) => {
+        const monthlyFee = getBaseMonthlyFee(slot.monthlyBudget);
+        const twoMonthFee = monthlyFee * PERIOD_MONTHS;
+        const tierLabel = getTierName(slot.monthlyBudget);
+
+        return `
+          <div class="p-4 rounded-2xl border border-slate-200 bg-white hover:border-indigo-200 transition space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 flex-1 min-w-0">
+                <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-700 text-xs font-bold flex items-center justify-center shrink-0">
+                  ${idx + 1}
+                </span>
+                <input
+                  type="text"
+                  value="${escapeHtml(slot.name)}"
+                  aria-label="클라이언트 이름"
+                  onchange="updateSlotName(${slot.id}, this.value)"
+                  class="font-bold text-slate-900 text-sm bg-transparent border-b border-transparent focus:border-indigo-500 focus:outline-none px-1 py-0.5 truncate w-full max-w-[180px]"
+                />
+                <span class="hidden sm:inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 shrink-0">
+                  ${tierLabel}
+                </span>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                <div class="text-right">
+                  <div class="text-xs font-extrabold text-slate-900">월 ${formatKRW(monthlyFee)}</div>
+                  <div class="text-[11px] text-indigo-600 font-semibold">2개월 ${formatKRW(twoMonthFee)}</div>
+                </div>
+                ${clientSlots.length > 1 ? `
+                  <button
+                    type="button"
+                    onclick="removeClientSlot(${slot.id})"
+                    title="계정 삭제"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- 월 광고예산 슬라이더 및 금액 표시 -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div class="flex-1">
+                <input
+                  type="range"
+                  min="300000"
+                  max="2000000"
+                  step="50000"
+                  value="${slot.monthlyBudget}"
+                  class="w-full brand-slider"
+                  oninput="updateSlotBudget(${slot.id}, Number(this.value))"
+                />
+              </div>
+              <div class="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+                <span class="text-sm font-extrabold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-xl border border-indigo-100">
+                  월 예산 ${formatManWon(slot.monthlyBudget)}
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 3. 시뮬레이터 계산 및 요약 카드 업데이트 (할인 미적용)
+    function updateSimulator() {
+      let totalMonthlyBudget = 0;
+      let totalMonthlyFee = 0;
+
+      clientSlots.forEach((slot) => {
+        totalMonthlyBudget += slot.monthlyBudget;
+        totalMonthlyFee += getBaseMonthlyFee(slot.monthlyBudget);
+      });
+
+      const totalTwoMonthBudget = totalMonthlyBudget * PERIOD_MONTHS;
+      const totalTwoMonthFee = totalMonthlyFee * PERIOD_MONTHS;
+
+      document.getElementById('summaryClientCount').textContent = `${clientSlots.length}개 계정`;
+      document.getElementById('summaryMonthlyBudget').textContent = formatManWon(totalMonthlyBudget);
+      document.getElementById('summaryTwoMonthBudget').textContent = formatManWon(totalTwoMonthBudget);
+      document.getElementById('summaryMonthlyFee').textContent = formatKRW(totalMonthlyFee);
+      document.getElementById('summaryFinalFee').textContent = formatKRW(totalTwoMonthFee);
+
+      const compEl = document.getElementById('comparisonNote');
+      if (compEl) {
+        compEl.textContent = `오늘 입금된 30만 원 건은 그대로 존중해 진행하며, 다음 신규 수주 및 연장 건부터 월 대행비 ${formatKRW(totalMonthlyFee)} (2개월 기준 ${formatKRW(totalTwoMonthFee)}) 기준으로 정산합니다.`;
+      }
+    }
+
+    function updateSlotName(id, newName) {
+      const target = clientSlots.find((s) => s.id === id);
+      if (target) {
+        target.name = newName.trim() || '클라이언트';
+      }
+    }
+
+    function updateSlotBudget(id, newBudget) {
+      const target = clientSlots.find((s) => s.id === id);
+      if (target) {
+        target.monthlyBudget = newBudget;
+        renderClientSlots();
+        updateSimulator();
+      }
+    }
+
+    function addClientSlot() {
+      clientSlots.push({
+        id: nextSlotId++,
+        name: `신규 수주 건 ${clientSlots.length + 1}`,
+        monthlyBudget: 750000
+      });
+      renderClientSlots();
+      updateSimulator();
+    }
+
+    function removeClientSlot(id) {
+      if (clientSlots.length <= 1) return;
+      clientSlots = clientSlots.filter((s) => s.id !== id);
+      renderClientSlots();
+      updateSimulator();
+    }
+
+    function loadPreset(presetKey) {
+      if (presetKey === 'todayCase') {
+        clientSlots = [
+          { id: 1, name: '신규 수주 건 1', monthlyBudget: 750000 },
+          { id: 2, name: '신규 수주 건 2', monthlyBudget: 1000000 },
+          { id: 3, name: '신규 수주 건 3', monthlyBudget: 750000 }
+        ];
+      } else if (presetKey === 'baseCase') {
+        clientSlots = [
+          { id: 1, name: '기본 수주 건 1', monthlyBudget: 500000 },
+          { id: 2, name: '기본 수주 건 2', monthlyBudget: 500000 },
+          { id: 3, name: '기본 수주 건 3', monthlyBudget: 500000 }
+        ];
+      }
+      nextSlotId = clientSlots.length + 1;
+      renderClientSlots();
+      updateSimulator();
+      showToast('시나리오가 적용되었습니다.');
+    }
+
+    function resetSimulator() {
+      loadPreset('todayCase');
+    }
+
+    // 파트너 공유용 정산 요약 텍스트 복사
+    function copySummaryText() {
+      const totalMonthlyBudget = clientSlots.reduce((acc, s) => acc + s.monthlyBudget, 0);
+      const totalMonthlyFee = clientSlots.reduce((acc, s) => acc + getBaseMonthlyFee(s.monthlyBudget), 0);
+      const totalTwoMonthBudget = totalMonthlyBudget * PERIOD_MONTHS;
+      const totalTwoMonthFee = totalMonthlyFee * PERIOD_MONTHS;
+
+      const detailLines = clientSlots.map((s, idx) => {
+        const mFee = getBaseMonthlyFee(s.monthlyBudget);
+        return `  ${idx + 1}. ${s.name}: 월 예산 ${formatManWon(s.monthlyBudget)} → 월 대행비 ${formatKRW(mFee)} / 2개월 기준 ${formatKRW(mFee * PERIOD_MONTHS)}`;
+      }).join('\n');
+
+      const text = [
+        `[애드플랜터스 × 노아유니버스컴퍼니] 메타광고 정산 안내`,
+        `- 진행 계정: ${clientSlots.length}개 (2개월 운영 기준)`,
+        `- 월 광고비 합계: ${formatManWon(totalMonthlyBudget)} (2개월 기준 ${formatManWon(totalTwoMonthBudget)})`,
+        detailLines,
+        `- 월 대행비 합계: ${formatKRW(totalMonthlyFee)}`,
+        `- 2개월 기준 총 대행비: ${formatKRW(totalTwoMonthFee)}`,
+        `※ 기존 입금 건(30만 원)은 존중하여 소급 적용하지 않으며, 다음 신규 수주 건 및 연장 건부터 본 구간별 기준표로 적용됩니다.`
+      ].join('\n');
+
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('정산 요약 텍스트가 복사되었습니다.');
+      } catch (err) {
+        showToast('복사 중 문제가 발생했습니다. 직접 선택해 복사해 주세요.');
+      }
+    }
+
+    // 토스트 알림 표시
+    let toastTimeout = null;
+    function showToast(message) {
+      const banner = document.getElementById('toastBanner');
+      const msgEl = document.getElementById('toastMessage');
+      if (!banner || !msgEl) return;
+
+      msgEl.textContent = message;
+      banner.classList.remove('hidden');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 2800);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const yearEl = document.getElementById('currentYear');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+      renderPricingTable();
+      renderClientSlots();
+      updateSimulator();
+    });
+  </script>
+</body>
+</html>
