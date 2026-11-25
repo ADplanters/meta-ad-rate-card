@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>애드플랜터스(AdPlanters) | 메타광고 대행 파트너십 단가표 &amp; 정산 시뮬레이터</title>
+  <title>애드플랜터스(AdPlanters) | 메타광고 대행 고유 단가표 &amp; 정산 시뮬레이터</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -36,6 +36,17 @@
       font-family: 'Noto Sans KR', 'Inter', sans-serif;
       background-color: #f8fafc;
       color: #0f172a;
+    }
+
+    /* 초기 패스워드 잠금 시 본문 전체 블러 및 인터랙션 차단 */
+    body.app-locked #appShell {
+      filter: blur(14px) saturate(0.75);
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body.app-locked {
+      overflow: hidden;
     }
 
     /* 커스텀 범위 슬라이더 스타일 */
@@ -126,7 +137,8 @@
     body.table-banner-only #calculatorSection,
     body.table-banner-only #guideSection,
     body.table-banner-only footer,
-    body.table-banner-only #htmlEditorModal {
+    body.table-banner-only #htmlEditorModal,
+    body.table-banner-only #passcodeChangeModal {
       display: none !important;
     }
     body.table-banner-only main {
@@ -136,6 +148,16 @@
     }
     body.table-banner-only #standaloneTableBannerSection {
       display: block !important;
+    }
+
+    /* 초기 블러 처리 및 패스워드 잠금 오버레이 */
+    body.is-locked #pageContentWrapper {
+      filter: blur(14px);
+      pointer-events: none;
+      user-select: none;
+    }
+    #passwordGateOverlay.is-hidden {
+      display: none !important;
     }
 
     @media print {
@@ -152,525 +174,593 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-brand-100 selection:text-brand-800">
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-brand-100 selection:text-brand-800 is-locked">
 
-  <!-- 상단 네비게이션 헤더 -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3 min-w-0">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-700 flex items-center justify-center text-white font-extrabold text-sm shadow-sm shrink-0">
+  <!-- 패스워드 잠금 오버레이 (비밀번호 힌트 또는 자동 입력 버튼 미노출) -->
+  <div id="passwordGateOverlay" class="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-4 no-print">
+    <div class="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-sm shrink-0">
           AP
         </div>
-        <div class="truncate">
-          <span class="font-bold text-slate-900 text-base sm:text-lg tracking-tight">애드플랜터스(AdPlanters)</span>
-          <span class="hidden md:inline-block mx-2 text-slate-300">|</span>
-          <span class="hidden md:inline-block text-xs sm:text-sm font-medium text-slate-500">노아유니버스컴퍼니 전용 메타광고 파트너십 단가표</span>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2 shrink-0">
-        <button
-          type="button"
-          onclick="openHtmlEditorModal()"
-          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200 transition cursor-pointer"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-          </svg>
-          <span>HTML 코드 편집</span>
-        </button>
-        <button
-          type="button"
-          onclick="copySummaryText()"
-          class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200 transition cursor-pointer"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-          <span>정산 요약 복사</span>
-        </button>
-        <button
-          type="button"
-          onclick="window.print()"
-          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 transition cursor-pointer"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-          </svg>
-          <span class="hidden sm:inline">인쇄 / PDF</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- 무손실 전체 반영 안내 바 -->
-  <div id="losslessNoticeBar" class="bg-indigo-50/90 border-b border-indigo-100 no-print">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-indigo-900">
-      <div class="flex items-center gap-2">
-        <span class="px-2 py-0.5 rounded-md bg-indigo-600 text-white font-bold text-[11px]">무손실 전체 반영</span>
-        <span>시나리오별 저장 상태 유지 · 계정별/전체 계약 개월 수 수정 · 정산 배너 &amp; 기준표 배너 URL 공유 기능 통합</span>
-      </div>
-      <span class="text-[11px] text-indigo-700 font-medium">임의 할인 미적용 · 정액/정률 기준표 적용</span>
-    </div>
-  </div>
-
-  <!-- 토스트 알림 -->
-  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden max-w-sm bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 text-sm flex items-center gap-3 no-print">
-    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
-    <span id="toastMessage">클립보드에 복사되었습니다.</span>
-  </div>
-
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-
-    <!-- 히어로 섹션 -->
-    <section id="heroSection" class="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-slate-200/80 shadow-sm print-shadow-none">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-        <div class="space-y-3 max-w-3xl">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold">
-            <span>PARTNERSHIP PRICING GUIDE</span>
-            <span>•</span>
-            <span>노아유니버스컴퍼니 × 애드플랜터스</span>
-          </div>
-          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
-            메타광고 대행 단가표 &amp; <span class="text-brand-600">월별 정산 시뮬레이터</span>
-          </h1>
-          <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
-            숨고 명예고수 타이틀을 보유하신 <strong>노아유니버스컴퍼니</strong>의 수주력과 콘텐츠·인스타그램 기술 역량에,
-            <strong>애드플랜터스</strong>의 실리적인 메타광고 세팅·최적화·운영을 결합한 파트너 전용 정산 기준입니다.
-            월 광고예산 규모와 고객별 계약 개월 수(1개월·2개월·3개월 등 맞춤 설정)에 맞춰 투명하게 산정합니다.
-          </p>
-        </div>
-
-        <!-- 핵심 기준 요약 카드 -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:w-72 shrink-0">
-          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
-            <div class="text-xs font-medium text-slate-500">기준 베이스 (월 50만)</div>
-            <div class="text-lg font-extrabold text-slate-900 mt-0.5">월 10만 원</div>
-            <div class="text-[11px] text-slate-500 mt-0.5">2개월 광고비 100만 / 대행비 20만</div>
-          </div>
-          <div class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3.5">
-            <div class="text-xs font-medium text-indigo-700">계약 개월 수 설정</div>
-            <div class="text-lg font-extrabold text-indigo-700 mt-0.5">전체 · 계정별 수정</div>
-            <div class="text-[11px] text-indigo-600/80 mt-0.5">1~24개월 고객 계약 맞춤 반영</div>
-          </div>
-          <div class="col-span-2 sm:col-span-1 lg:col-span-1 bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
-            <div class="text-xs font-medium text-slate-700">적용 원칙</div>
-            <div class="text-base font-extrabold text-slate-900 mt-0.5">차기·신규 건부터</div>
-            <div class="text-[11px] text-slate-500 mt-0.5">기존 입금 건(30만 원) 존중</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 1. 월 광고예산 구간별 단가표 섹션 -->
-    <section id="rateCardSection" class="space-y-4">
-      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
         <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">01. PRICING TABLE</span>
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">월 광고예산 구간별 대행비 기준표</h2>
-          <p class="text-xs sm:text-sm text-slate-500 mt-1">
-            * 광고비와 대행비는 분리 정산되며, 임의 할인 없이 정액/정률 기준표대로 산정됩니다.
-          </p>
-        </div>
-
-        <!-- 기준표 공유 배너 링크 액션 -->
-        <div class="flex flex-wrap items-center gap-2 no-print shrink-0">
-          <button
-            type="button"
-            onclick="copyTableBannerUrl()"
-            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-sm transition cursor-pointer"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-            <span>기준표 공유 URL 복사</span>
-          </button>
-          <button
-            type="button"
-            onclick="openTableBannerPreview()"
-            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition cursor-pointer"
-          >
-            <span>기준표 배너 보기</span>
-          </button>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-brand-600">ADPLANTERS ACCESS LOCK</span>
+          <h2 class="text-xl font-extrabold text-slate-900">애드플랜터스 고유 단가표 열람 잠금</h2>
         </div>
       </div>
 
-      <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden print-shadow-none">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                <th class="py-4 px-5">월 메타 광고예산 구간</th>
-                <th class="py-4 px-5">월 대행비 (1개월)</th>
-                <th class="py-4 px-5">2개월 기준 광고비 / 대행비</th>
-                <th class="py-4 px-5">산정 기준</th>
-                <th class="py-4 px-5">세팅·최적화 운영 범위</th>
-              </tr>
-            </thead>
-            <tbody id="pricingTableBody" class="divide-y divide-slate-100 text-sm">
-              <!-- JS로 렌더링 -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+      <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+        애드플랜터스(AdPlanters) 고유 메타광고 대행 단가표 및 정산 시뮬레이터를 열람하려면 접속 패스워드를 입력하세요.
+      </p>
 
-    <!-- 기준표 단독 공유 배너 섹션 (?view=table-banner 또는 bannerType === 'table' 시 표시) -->
-    <section id="standaloneTableBannerSection" class="hidden w-full max-w-5xl mx-auto">
-      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-lg space-y-5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">PRICING TABLE BANNER</span>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5">
-              애드플랜터스 × 노아유니버스컴퍼니 메타광고 단가표
-            </h2>
-            <p class="text-xs text-slate-500 mt-1">
-              * 광고비와 대행비는 분리 정산되며, 임의 할인 없이 정액/정률 기준표대로 산정됩니다.
-            </p>
-          </div>
-          <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 self-start sm:self-auto">
-            파트너 공유용 기준표
-          </span>
-        </div>
-
-        <div class="overflow-x-auto rounded-2xl border border-slate-200/80">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-900 text-white text-xs font-bold uppercase tracking-wider">
-                <th class="py-3.5 px-4">월 메타 광고예산 구간</th>
-                <th class="py-3.5 px-4">월 대행비 (1개월)</th>
-                <th class="py-3.5 px-4">2개월 기준 광고비 / 대행비</th>
-                <th class="py-3.5 px-4">산정 기준</th>
-                <th class="py-3.5 px-4">세팅·최적화 운영 범위</th>
-              </tr>
-            </thead>
-            <tbody id="standaloneTableBannerBody" class="divide-y divide-slate-100 text-xs sm:text-sm bg-white">
-              <!-- JS로 렌더링 -->
-            </tbody>
-          </table>
-        </div>
-
-        <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-          <span>애드플랜터스(AdPlanters) 메타광고 대행 운영 기준</span>
-          <button
-            type="button"
-            onclick="openFullPageFromTableBanner()"
-            class="text-indigo-600 hover:text-indigo-800 font-bold underline underline-offset-2 cursor-pointer no-print"
-          >
-            전체 페이지 및 정산 계산기 열기
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2. 정산 시뮬레이터 & 공유 배너 섹션 -->
-    <section id="calculatorSection" class="space-y-4">
-      <div id="calculatorSectionHeader" class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-        <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">02. SETTLEMENT CALCULATOR</span>
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">메타광고 대행비 정산 계산기</h2>
-        </div>
-        <p class="text-xs sm:text-sm text-slate-500">
-          계약 개월 수(전체 및 각 계정별)와 월 예산을 조절하거나 계정을 추가·삭제해 계약 총액을 계산하세요.
-        </p>
-      </div>
-
-      <div id="calculatorGrid" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- 좌측: 시나리오 탭, 계약 개월 수 설정 및 클라이언트 슬롯 편집 -->
-        <div id="leftCalculatorColumn" class="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5 print-shadow-none">
-          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
-            <span class="text-xs font-bold text-slate-600">정산 시나리오:</span>
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                id="tab-todayCase"
-                onclick="switchScenario('todayCase')"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer"
-              >
-                <span>오늘 사례 (75만 · 100만 · 75만)</span>
-                <span id="badge-todayCase" class="hidden px-1.5 py-0.5 text-[10px] font-bold rounded-md">수정됨</span>
-              </button>
-              <button
-                type="button"
-                id="tab-initialBase"
-                onclick="switchScenario('initialBase')"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer"
-              >
-                <span>초기 기준 (월 50만 × 3건)</span>
-                <span id="badge-initialBase" class="hidden px-1.5 py-0.5 text-[10px] font-bold rounded-md">수정됨</span>
-              </button>
-              <button
-                type="button"
-                onclick="restoreCurrentScenarioDefault()"
-                title="현재 선택된 시나리오만 기본 세팅으로 되돌리기"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 transition cursor-pointer"
-              >
-                기본값 복원
-              </button>
-              <button
-                type="button"
-                onclick="addClientSlot()"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
-              >
-                + 계정 추가
-              </button>
-            </div>
-          </div>
-
-          <!-- 계약 개월 수 제어 바 (전체 기본 개월 수 + 모든 계정에 일괄 적용 옵션) -->
-          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="space-y-0.5">
-              <div class="text-xs font-bold text-slate-800">계약 개월 수 설정 (기본값 / 전체 적용)</div>
-              <div class="text-[11px] text-slate-500">
-                각 고객 행에서 개월 수를 개별 수정할 수 있으며, 아래 버튼으로 전체 계정에 한 번에 적용할 수도 있습니다.
-              </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 shrink-0">
-              <button
-                type="button"
-                onclick="setGlobalContractMonths(1, false)"
-                class="preset-month-btn px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer"
-                data-months="1"
-              >1개월</button>
-              <button
-                type="button"
-                onclick="setGlobalContractMonths(2, false)"
-                class="preset-month-btn px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer"
-                data-months="2"
-              >2개월</button>
-              <button
-                type="button"
-                onclick="setGlobalContractMonths(3, false)"
-                class="preset-month-btn px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer"
-                data-months="3"
-              >3개월</button>
-              <button
-                type="button"
-                onclick="setGlobalContractMonths(6, false)"
-                class="preset-month-btn px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer"
-                data-months="6"
-              >6개월</button>
-              <div class="inline-flex items-center bg-white border border-slate-300 rounded-lg px-2 py-0.5">
-                <input
-                  id="globalMonthsInput"
-                  type="number"
-                  min="1"
-                  max="24"
-                  value="2"
-                  aria-label="기본 계약 개월 수 직접 입력"
-                  oninput="handleGlobalMonthsInput(this.value)"
-                  class="w-11 text-xs font-extrabold text-slate-900 text-center focus:outline-none bg-transparent"
-                />
-                <span class="text-[11px] font-semibold text-slate-500 ml-0.5">개월</span>
-              </div>
-              <button
-                type="button"
-                onclick="applyDefaultMonthsToAllSlots()"
-                title="현재 기본 개월 수를 모든 계정 행에 일괄 적용"
-                class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition cursor-pointer"
-              >
-                모든 계정 적용
-              </button>
-            </div>
-          </div>
-
-          <div id="clientSlotsContainer" class="space-y-3.5">
-            <!-- JS로 렌더링 -->
-          </div>
-        </div>
-
-        <!-- 우측: 정산 결과 요약 카드 / 공유 배너 -->
-        <div id="settlementSummaryCard" class="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-lg print-shadow-none">
-          <div id="settlementSummaryInner" class="space-y-5">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-300">SETTLEMENT SUMMARY</span>
-                <h3 class="text-lg font-bold text-white mt-0.5">구간별 정산 계산 결과</h3>
-              </div>
-              <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-200 border border-indigo-400/30">
-                정액/정률 기준
-              </span>
-            </div>
-
-            <!-- 적용 원칙 안내 칸 (편집기 모드: textarea + 내용 지우기/기본 문구 / 배너 모드: 읽기 전용 텍스트) -->
-            <div id="policyNoteBox" class="bg-slate-800/85 border border-slate-700 rounded-2xl p-3.5 space-y-2">
-              <div id="policyNoteTextareaWrap" class="space-y-2">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-xs font-bold text-indigo-300">적용 원칙 안내</span>
-                    <span id="policyEmptyBadge" class="hidden text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">비워짐</span>
-                  </div>
-                  <div class="flex items-center gap-1.5 no-print editor-only-ui">
-                    <button
-                      type="button"
-                      onclick="clearPolicyNote()"
-                      title="안내 내용을 모두 지워 빈 상태로 둡니다"
-                      class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-700/80 hover:bg-rose-900/70 text-slate-200 hover:text-rose-200 transition cursor-pointer"
-                    >
-                      내용 지우기
-                    </button>
-                    <button
-                      type="button"
-                      onclick="restoreDefaultPolicyNote()"
-                      title="기본 안내 문구로 되돌립니다"
-                      class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-700/80 hover:bg-slate-600 text-slate-200 transition cursor-pointer"
-                    >
-                      기본 문구
-                    </button>
-                  </div>
-                </div>
-                <textarea
-                  id="comparisonNoteInput"
-                  rows="3"
-                  placeholder="적용 원칙 안내를 자유롭게 입력하세요. 내용을 지우면 빈 상태로 유지됩니다."
-                  oninput="handlePolicyNoteInput(this.value)"
-                  class="w-full text-xs text-slate-100 placeholder-slate-500 bg-slate-950/70 border border-slate-700/90 focus:border-indigo-400 focus:outline-none rounded-xl px-3 py-2 leading-relaxed resize-y"
-                ></textarea>
-              </div>
-
-              <!-- 배너 단독 보기 모드용 읽기 전용 안내 -->
-              <div id="policyNoteReadOnlyWrap" class="hidden space-y-1">
-                <span class="block text-xs font-bold text-indigo-300">적용 원칙 안내</span>
-                <p id="policyNoteReadOnlyText" class="text-xs text-slate-200 leading-relaxed whitespace-pre-line"></p>
-              </div>
-            </div>
-
-            <!-- 세부 집계 -->
-            <div class="space-y-3 text-sm">
-              <div class="flex items-center justify-between text-slate-300">
-                <span>진행 계정 수</span>
-                <span id="summaryClientCount" class="font-semibold text-white">3개 계정</span>
-              </div>
-              <div class="flex items-center justify-between text-slate-300">
-                <span>월 광고비 합계</span>
-                <span id="summaryMonthlyBudget" class="font-semibold text-white">250만 원</span>
-              </div>
-              <div class="flex items-center justify-between text-slate-300">
-                <span id="summaryPeriodBudgetLabel">계약 기간 광고비 합계</span>
-                <span id="summaryPeriodBudget" class="font-semibold text-slate-200">500만 원</span>
-              </div>
-              <div class="flex items-center justify-between text-slate-300 border-t border-slate-800 pt-3">
-                <span>월 대행비 합계 (1개월)</span>
-                <span id="summaryMonthlyFee" class="text-base font-extrabold text-indigo-300">500,000원</span>
-              </div>
-            </div>
-
-            <!-- 계약 기간 총 대행비 강조 박스 -->
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-1.5">
-              <div class="flex items-center justify-between gap-2">
-                <span id="summaryFinalFeeLabel" class="text-xs font-medium text-slate-300">계약 기간 총 대행비</span>
-                <span id="summaryPeriodFormulaBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-500/30 text-indigo-200">계정별 계약 개월 합산</span>
-              </div>
-              <div id="summaryFinalFee" class="text-3xl font-extrabold text-white tracking-tight">1,000,000원</div>
-            </div>
-          </div>
-
-          <!-- 편집기 액션 버튼 그룹 (배너 단독 보기 모드에서는 숨김) -->
-          <div class="pt-6 mt-6 border-t border-slate-800 space-y-2.5 no-print editor-only-ui">
-            <div class="flex flex-col sm:flex-row gap-2">
-              <button
-                type="button"
-                onclick="copySummaryText()"
-                class="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition cursor-pointer text-center"
-              >
-                파트너 공유용 텍스트 복사
-              </button>
-              <button
-                type="button"
-                onclick="copyShareUrl()"
-                class="flex-1 py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm transition cursor-pointer text-center"
-              >
-                공유 URL 복사
-              </button>
-            </div>
-            <div class="flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onclick="toggleBannerPreviewMode()"
-                class="flex-1 py-2 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-indigo-200 font-semibold text-xs transition cursor-pointer text-center border border-slate-700"
-              >
-                공유 배너 미리보기 전환
-              </button>
-              <button
-                type="button"
-                onclick="resetSimulator()"
-                title="현재 시나리오 및 저장된 전체 시나리오를 초기 기본값으로 되돌립니다"
-                class="py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition cursor-pointer"
-              >
-                초기화
-              </button>
-            </div>
-          </div>
-
-          <!-- 배너 단독 보기 모드 하단 링크 -->
-          <div id="bannerFullViewLinkWrap" class="hidden pt-5 mt-5 border-t border-slate-800 items-center justify-between text-xs text-slate-400 no-print">
-            <span>애드플랜터스 × 노아유니버스컴퍼니 정산 안내</span>
+      <form id="passwordGateForm" onsubmit="handlePasswordUnlock(event)" class="space-y-4">
+        <div class="space-y-1.5">
+          <label for="gatePasswordInput" class="block text-xs font-bold text-slate-700">접속 패스워드</label>
+          <div class="relative flex items-center">
+            <input
+              id="gatePasswordInput"
+              type="password"
+              autocomplete="current-password"
+              placeholder="패스워드 입력"
+              required
+              class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 pr-16 text-sm font-semibold text-slate-900 focus:bg-white focus:border-brand-600 focus:outline-none"
+            />
             <button
               type="button"
-              onclick="openFullCalculatorFromBanner()"
-              class="text-indigo-300 hover:text-indigo-200 font-semibold underline underline-offset-2 cursor-pointer"
+              onclick="toggleGatePasswordVisibility()"
+              class="absolute right-2.5 px-2 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-200/70 transition cursor-pointer"
             >
-              전체 계산기 화면으로 열기
+              <span id="gateVisibilityLabel">표시</span>
+            </button>
+          </div>
+          <p id="gateErrorMessage" class="hidden text-xs font-semibold text-rose-600 pt-0.5">
+            패스워드가 일치하지 않습니다. 다시 입력해 주세요.
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-sm transition cursor-pointer"
+        >
+          잠금 해제 및 단가표 열기
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 블러 대상 메인 콘텐츠 래퍼 -->
+  <div id="pageContentWrapper">
+    <!-- 상단 네비게이션 헤더 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-700 flex items-center justify-center text-white font-extrabold text-sm shadow-sm shrink-0">
+            AP
+          </div>
+          <div class="truncate">
+            <span class="font-bold text-slate-900 text-base sm:text-lg tracking-tight">애드플랜터스(AdPlanters)</span>
+            <span class="hidden md:inline-block mx-2 text-slate-300">|</span>
+            <span class="hidden md:inline-block text-xs sm:text-sm font-medium text-slate-500">애드플랜터스 고유 메타광고 대행 단가표</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onclick="openHtmlEditorModal()"
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200 transition cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            <span class="hidden sm:inline">HTML 코드 편집</span>
+          </button>
+          <button
+            type="button"
+            onclick="copySummaryText()"
+            class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200 transition cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span>정산 요약 복사</span>
+          </button>
+          <button
+            type="button"
+            onclick="openPasscodeModal()"
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
+          >
+            <span>패스워드 설정</span>
+          </button>
+          <button
+            type="button"
+            onclick="lockPageNow()"
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-white hover:bg-slate-700 transition cursor-pointer"
+          >
+            <span>화면 잠금</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.print()"
+            class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 transition cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span>인쇄 / PDF</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 무손실 전체 반영 안내 바 -->
+    <div id="losslessNoticeBar" class="bg-indigo-50/90 border-b border-indigo-100 no-print">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-indigo-900">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-indigo-600 text-white font-bold text-[11px]">애드플랜터스 고유 기준</span>
+          <span>초기 블러·패스워드 잠금 · 시나리오별 저장 상태 유지 · 계정별/전체 계약 개월 수 수정 · 정산 배너 &amp; 기준표 배너 URL 공유</span>
+        </div>
+        <span class="text-[11px] text-indigo-700 font-medium">임의 할인 미적용 · 정액/정률 기준표 적용</span>
+      </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden max-w-sm bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 text-sm flex items-center gap-3 no-print">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
+      <span id="toastMessage">클립보드에 복사되었습니다.</span>
+    </div>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+      <!-- 히어로 섹션 -->
+      <section id="heroSection" class="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-slate-200/80 shadow-sm print-shadow-none">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div class="space-y-3 max-w-3xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold">
+              <span>ADPLANTERS PROPRIETARY RATE CARD</span>
+              <span>•</span>
+              <span>애드플랜터스(AdPlanters) 고유 운영 기준</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
+              애드플랜터스 메타광고 대행 고유 단가표 &amp; <span class="text-brand-600">정산 시뮬레이터</span>
+            </h1>
+            <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+              <strong>애드플랜터스(AdPlanters)</strong>가 자체 운영 공수와 캠페인 세팅·소재 테스트·성과 최적화 기준에 따라 수립한 고유 메타광고 대행 단가표입니다.
+              월 광고예산 구간과 고객 계약 개월 수(1개월·2개월·3개월·6개월 등 맞춤 설정)에 맞춰 일관된 정액/정률 기준으로 대행비를 산정합니다.
+            </p>
+          </div>
+
+          <!-- 핵심 기준 요약 카드 -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:w-72 shrink-0">
+            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+              <div class="text-xs font-medium text-slate-500">기준 베이스 (월 50만)</div>
+              <div class="text-lg font-extrabold text-slate-900 mt-0.5">월 10만 원</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">2개월 광고비 100만 / 대행비 20만</div>
+            </div>
+            <div class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3.5">
+              <div class="text-xs font-medium text-indigo-700">계약 개월 수 설정</div>
+              <div class="text-lg font-extrabold text-indigo-700 mt-0.5">전체 · 계정별 수정</div>
+              <div class="text-[11px] text-indigo-600/80 mt-0.5">1~24개월 고객 계약 맞춤 반영</div>
+            </div>
+            <div class="col-span-2 sm:col-span-1 lg:col-span-1 bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+              <div class="text-xs font-medium text-slate-700">적용 원칙</div>
+              <div class="text-base font-extrabold text-slate-900 mt-0.5">차기·신규 건부터</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">기존 입금 건(30만 원) 존중</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1. 월 광고예산 구간별 단가표 섹션 -->
+      <section id="rateCardSection" class="space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">01. PRICING TABLE</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">애드플랜터스 월 광고예산 구간별 대행비 기준표</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+              * 광고비와 대행비는 분리 정산되며, 임의 할인 없이 애드플랜터스 고유 정액/정률 기준표대로 산정됩니다.
+            </p>
+          </div>
+
+          <!-- 기준표 공유 배너 링크 액션 -->
+          <div class="flex flex-wrap items-center gap-2 no-print shrink-0">
+            <button
+              type="button"
+              onclick="copyTableBannerUrl()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-sm transition cursor-pointer"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              <span>기준표 공유 URL 복사</span>
+            </button>
+            <button
+              type="button"
+              onclick="openTableBannerPreview()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition cursor-pointer"
+            >
+              <span>기준표 배너 보기</span>
             </button>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- 3. 파트너 정산 조율 가이드 -->
-    <section id="guideSection" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-5 print-shadow-none">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-        <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">03. PARTNERSHIP GUIDE</span>
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">노아유니버스컴퍼니 정산 조율 가이드</h2>
-        </div>
-        <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full self-start sm:self-auto">
-          기존 입금 건 존중 · 차기/신규 건 적용
-        </span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm text-slate-600 leading-relaxed">
-        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
-          <div class="font-bold text-slate-900 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">1</span>
-            <span>이번 입금 건(30만 원)은 그대로 진행</span>
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden print-shadow-none">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th class="py-4 px-5">월 메타 광고예산 구간</th>
+                  <th class="py-4 px-5">월 대행비 (1개월)</th>
+                  <th class="py-4 px-5">2개월 기준 광고비 / 대행비</th>
+                  <th class="py-4 px-5">산정 기준</th>
+                  <th class="py-4 px-5">세팅·최적화 운영 범위</th>
+                </tr>
+              </thead>
+              <tbody id="pricingTableBody" class="divide-y divide-slate-100 text-sm">
+                <!-- JS로 렌더링 -->
+              </tbody>
+            </table>
           </div>
-          <p>
-            오늘 입금해 주신 건은 소급해 추가 요청하지 않고 기존 흐름대로 진행해 드립니다. 숨고 명예고수 타이틀을 보유한 노아유니버스컴퍼니의 수주 성과에 감사함을 전하며 부담 없이 시작합니다.
+        </div>
+      </section>
+
+      <!-- 기준표 단독 공유 배너 섹션 (?view=table-banner 또는 bannerType === 'table' 시 표시) -->
+      <section id="standaloneTableBannerSection" class="hidden w-full max-w-5xl mx-auto">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-lg space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">ADPLANTERS PRICING TABLE BANNER</span>
+              <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5">
+                애드플랜터스(AdPlanters) 고유 메타광고 단가표
+              </h2>
+              <p class="text-xs text-slate-500 mt-1">
+                * 광고비와 대행비는 분리 정산되며, 임의 할인 없이 애드플랜터스 고유 정액/정률 기준표대로 산정됩니다.
+              </p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 self-start sm:self-auto">
+              애드플랜터스 고유 기준표
+            </span>
+          </div>
+
+          <div class="overflow-x-auto rounded-2xl border border-slate-200/80">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-900 text-white text-xs font-bold uppercase tracking-wider">
+                  <th class="py-3.5 px-4">월 메타 광고예산 구간</th>
+                  <th class="py-3.5 px-4">월 대행비 (1개월)</th>
+                  <th class="py-3.5 px-4">2개월 기준 광고비 / 대행비</th>
+                  <th class="py-3.5 px-4">산정 기준</th>
+                  <th class="py-3.5 px-4">세팅·최적화 운영 범위</th>
+                </tr>
+              </thead>
+              <tbody id="standaloneTableBannerBody" class="divide-y divide-slate-100 text-xs sm:text-sm bg-white">
+                <!-- JS로 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+            <span>애드플랜터스(AdPlanters) 고유 메타광고 대행 운영 기준</span>
+            <button
+              type="button"
+              onclick="openFullPageFromTableBanner()"
+              class="text-indigo-600 hover:text-indigo-800 font-bold underline underline-offset-2 cursor-pointer no-print"
+            >
+              전체 페이지 및 정산 계산기 열기
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. 정산 시뮬레이터 & 공유 배너 섹션 -->
+      <section id="calculatorSection" class="space-y-4">
+        <div id="calculatorSectionHeader" class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">02. SETTLEMENT CALCULATOR</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">메타광고 대행비 정산 계산기</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500">
+            계약 개월 수(전체 및 각 계정별)와 월 예산을 조절하거나 계정을 추가·삭제해 계약 총액을 계산하세요.
           </p>
         </div>
 
-        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
-          <div class="font-bold text-slate-900 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">2</span>
-            <span>예산 구간 및 계약 개월 수 반영</span>
+        <div id="calculatorGrid" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- 좌측: 시나리오 탭, 계약 개월 수 설정 및 클라이언트 슬롯 편집 -->
+          <div id="leftCalculatorColumn" class="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5 print-shadow-none">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-600">정산 시나리오:</span>
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  id="tab-todayCase"
+                  onclick="switchScenario('todayCase')"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer"
+                >
+                  <span>오늘 사례 (75만 · 100만 · 75만)</span>
+                  <span id="badge-todayCase" class="hidden px-1.5 py-0.5 text-[10px] font-bold rounded-md">수정됨</span>
+                </button>
+                <button
+                  type="button"
+                  id="tab-initialBase"
+                  onclick="switchScenario('initialBase')"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer"
+                >
+                  <span>초기 기준 (월 50만 × 3건)</span>
+                  <span id="badge-initialBase" class="hidden px-1.5 py-0.5 text-[10px] font-bold rounded-md">수정됨</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="restoreCurrentScenarioDefault()"
+                  title="현재 선택된 시나리오만 기본 세팅으로 되돌리기"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 transition cursor-pointer"
+                >
+                  기본값 복원
+                </button>
+                <button
+                  type="button"
+                  onclick="addClientSlot()"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
+                >
+                  + 계정 추가
+                </button>
+              </div>
+            </div>
+
+            <!-- 계약 개월 수 제어 바 (전체 기본 개월 수 + 모든 계정에 일괄 적용 옵션) -->
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="space-y-0.5">
+                <div class="text-xs font-bold text-slate-800">계약 개월 수 설정 (기본값 / 전체 적용)</div>
+                <div class="text-[11px] text-slate-500">
+                  각 고객 행에서 개월 수를 개별 수정할 수 있으며, 아래 버튼으로 전체 계정에 한 번에 적용할 수도 있습니다.
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onclick="setGlobalContractMonths(1, false)"
+                  class="preset-month-btn px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer"
+                  data-months="1"
+                >1개월</button>
+                <button
+                  type="button"
+                  onclick="setGlobalContractMonths(2, false)"
+                  class="preset-month-btn px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer"
+                  data-months="2"
+                >2개월</button>
+                <button
+                  type="button"
+                  onclick="setGlobalContractMonths(3, false)"
+                  class="preset-month-btn px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer"
+                  data-months="3"
+                >3개월</button>
+                <button
+                  type="button"
+                  onclick="setGlobalContractMonths(6, false)"
+                  class="preset-month-btn px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer"
+                  data-months="6"
+                >6개월</button>
+                <div class="inline-flex items-center bg-white border border-slate-300 rounded-lg px-2 py-0.5">
+                  <input
+                    id="globalMonthsInput"
+                    type="number"
+                    min="1"
+                    max="24"
+                    value="2"
+                    aria-label="기본 계약 개월 수 직접 입력"
+                    oninput="handleGlobalMonthsInput(this.value)"
+                    class="w-11 text-xs font-extrabold text-slate-900 text-center focus:outline-none bg-transparent"
+                  />
+                  <span class="text-[11px] font-semibold text-slate-500 ml-0.5">개월</span>
+                </div>
+                <button
+                  type="button"
+                  onclick="applyDefaultMonthsToAllSlots()"
+                  title="현재 기본 개월 수를 모든 계정 행에 일괄 적용"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition cursor-pointer"
+                >
+                  모든 계정 적용
+                </button>
+              </div>
+            </div>
+
+            <div id="clientSlotsContainer" class="space-y-3.5">
+              <!-- JS로 렌더링 -->
+            </div>
           </div>
-          <p>
-            고객사별 계약 개월 수(1·2·3·6개월 등)와 월 광고예산 규모에 따라 세팅·소재 테스트·최적화 공수가 달라지므로, <strong>다음 신규 수주 및 연장 건부터</strong> 구간별 단가표와 실제 계약 개월 수 기준으로 정산합니다.
-          </p>
+
+          <!-- 우측: 정산 결과 요약 카드 / 공유 배너 -->
+          <div id="settlementSummaryCard" class="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-lg print-shadow-none">
+            <div id="settlementSummaryInner" class="space-y-5">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-300">ADPLANTERS SETTLEMENT SUMMARY</span>
+                  <h3 class="text-lg font-bold text-white mt-0.5">구간별 정산 계산 결과</h3>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-200 border border-indigo-400/30">
+                  고유 정액/정률 기준
+                </span>
+              </div>
+
+              <!-- 적용 원칙 안내 칸 (편집기 모드: textarea + 내용 지우기/기본 문구 / 배너 모드: 읽기 전용 텍스트) -->
+              <div id="policyNoteBox" class="bg-slate-800/85 border border-slate-700 rounded-2xl p-3.5 space-y-2">
+                <div id="policyNoteTextareaWrap" class="space-y-2">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs font-bold text-indigo-300">적용 원칙 안내</span>
+                      <span id="policyEmptyBadge" class="hidden text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">비워짐</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 no-print editor-only-ui">
+                      <button
+                        type="button"
+                        onclick="clearPolicyNote()"
+                        title="안내 내용을 모두 지워 빈 상태로 둡니다"
+                        class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-700/80 hover:bg-rose-900/70 text-slate-200 hover:text-rose-200 transition cursor-pointer"
+                      >
+                        내용 지우기
+                      </button>
+                      <button
+                        type="button"
+                        onclick="restoreDefaultPolicyNote()"
+                        title="기본 안내 문구로 되돌립니다"
+                        class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-700/80 hover:bg-slate-600 text-slate-200 transition cursor-pointer"
+                      >
+                        기본 문구
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                    id="comparisonNoteInput"
+                    rows="3"
+                    placeholder="적용 원칙 안내를 자유롭게 입력하세요. 내용을 지우면 빈 상태로 유지됩니다."
+                    oninput="handlePolicyNoteInput(this.value)"
+                    class="w-full text-xs text-slate-100 placeholder-slate-500 bg-slate-950/70 border border-slate-700/90 focus:border-indigo-400 focus:outline-none rounded-xl px-3 py-2 leading-relaxed resize-y"
+                  ></textarea>
+                </div>
+
+                <!-- 배너 단독 보기 모드용 읽기 전용 안내 -->
+                <div id="policyNoteReadOnlyWrap" class="hidden space-y-1">
+                  <span class="block text-xs font-bold text-indigo-300">적용 원칙 안내</span>
+                  <p id="policyNoteReadOnlyText" class="text-xs text-slate-200 leading-relaxed whitespace-pre-line"></p>
+                </div>
+              </div>
+
+              <!-- 세부 집계 -->
+              <div class="space-y-3 text-sm">
+                <div class="flex items-center justify-between text-slate-300">
+                  <span>진행 계정 수</span>
+                  <span id="summaryClientCount" class="font-semibold text-white">3개 계정</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-300">
+                  <span>월 광고비 합계</span>
+                  <span id="summaryMonthlyBudget" class="font-semibold text-white">250만 원</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-300">
+                  <span id="summaryPeriodBudgetLabel">계약 기간 광고비 합계</span>
+                  <span id="summaryPeriodBudget" class="font-semibold text-slate-200">500만 원</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-300 border-t border-slate-800 pt-3">
+                  <span>월 대행비 합계 (1개월)</span>
+                  <span id="summaryMonthlyFee" class="text-base font-extrabold text-indigo-300">500,000원</span>
+                </div>
+              </div>
+
+              <!-- 계약 기간 총 대행비 강조 박스 -->
+              <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span id="summaryFinalFeeLabel" class="text-xs font-medium text-slate-300">계약 기간 총 대행비</span>
+                  <span id="summaryPeriodFormulaBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-500/30 text-indigo-200">계정별 계약 개월 합산</span>
+                </div>
+                <div id="summaryFinalFee" class="text-3xl font-extrabold text-white tracking-tight">1,000,000원</div>
+              </div>
+            </div>
+
+            <!-- 편집기 액션 버튼 그룹 (배너 단독 보기 모드에서는 숨김) -->
+            <div class="pt-6 mt-6 border-t border-slate-800 space-y-2.5 no-print editor-only-ui">
+              <div class="flex flex-col sm:flex-row gap-2">
+                <button
+                  type="button"
+                  onclick="copySummaryText()"
+                  class="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition cursor-pointer text-center"
+                >
+                  공유용 요약 텍스트 복사
+                </button>
+                <button
+                  type="button"
+                  onclick="copyShareUrl()"
+                  class="flex-1 py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm transition cursor-pointer text-center"
+                >
+                  공유 URL 복사
+                </button>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onclick="toggleBannerPreviewMode()"
+                  class="flex-1 py-2 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-indigo-200 font-semibold text-xs transition cursor-pointer text-center border border-slate-700"
+                >
+                  공유 배너 미리보기 전환
+                </button>
+                <button
+                  type="button"
+                  onclick="resetSimulator()"
+                  title="현재 시나리오 및 저장된 전체 시나리오를 초기 기본값으로 되돌립니다"
+                  class="py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition cursor-pointer"
+                >
+                  초기화
+                </button>
+              </div>
+            </div>
+
+            <!-- 배너 단독 보기 모드 하단 링크 -->
+            <div id="bannerFullViewLinkWrap" class="hidden pt-5 mt-5 border-t border-slate-800 items-center justify-between text-xs text-slate-400 no-print">
+              <span>애드플랜터스(AdPlanters) 고유 정산 안내</span>
+              <button
+                type="button"
+                onclick="openFullCalculatorFromBanner()"
+                class="text-indigo-300 hover:text-indigo-200 font-semibold underline underline-offset-2 cursor-pointer"
+              >
+                전체 계산기 화면으로 열기
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-  </main>
+      <!-- 3. 애드플랜터스 고유 정산 운영 가이드 -->
+      <section id="guideSection" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-5 print-shadow-none">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">03. OPERATION GUIDE</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">애드플랜터스 고유 정산 운영 가이드</h2>
+          </div>
+          <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full self-start sm:self-auto">
+            기존 입금 건 존중 · 차기/신규 건 적용
+          </span>
+        </div>
 
-  <footer class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-xs text-slate-400">
-    © <span id="currentYear">2026</span> AdPlanters(애드플랜터스). 노아유니버스컴퍼니 메타광고 운영 기준표.
-  </footer>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm text-slate-600 leading-relaxed">
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
+            <div class="font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+              <span>기존 입금 건(30만 원)은 그대로 진행</span>
+            </div>
+            <p>
+              이미 입금 완료된 30만 원 건은 소급해 추가 요청하지 않고 기존 흐름대로 진행해 드립니다. 애드플랜터스는 장기 협업 신뢰를 우선으로 합니다.
+            </p>
+          </div>
 
-  <!-- HTML 코드 편집 모달 -->
-  <div id="htmlEditorModal" class="fixed inset-0 z-50 hidden bg-slate-950/75 flex items-center justify-center p-4 no-print">
-    <div class="bg-white text-slate-900 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3 bg-slate-50">
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
+            <div class="font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+              <span>예산 구간 및 계약 개월 수 반영</span>
+            </div>
+            <p>
+              고객사별 계약 개월 수(1·2·3·6개월 등)와 월 광고예산 규모에 따라 캠페인 세팅·소재 교체·성과 최적화 공수가 달라지므로, <strong>다음 신규 수주 및 연장 건부터</strong> 애드플랜터스 고유 기준표와 실제 계약 개월 수 기준으로 정산합니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-xs text-slate-400">
+      © <span id="currentYear">2026</span> AdPlanters(애드플랜터스). 애드플랜터스 고유 메타광고 대행 단가표.
+    </footer>
+  </div>
+
+  <!-- 패스워드 변경/초기화 모달 -->
+  <div id="passcodeChangeModal" class="fixed inset-0 z-50 hidden bg-slate-950/75 flex items-center justify-center p-4 no-print">
+    <div class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <div>
-          <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">HTML BANNER / SUMMARY EDITOR</span>
-          <h3 class="text-lg font-extrabold text-slate-900">정산 배너 HTML 코드 편집</h3>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">PASSCODE SETTINGS</span>
+          <h3 class="text-lg font-extrabold text-slate-900">접속 패스워드 변경</h3>
         </div>
         <button
           type="button"
-          onclick="closeHtmlEditorModal()"
-          class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 transition cursor-pointer"
-          aria-label="HTML 편집기 닫기"
+          onclick="closePasscodeModal()"
+          class="p-1.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer"
+          aria-label="패스워드 설정 닫기"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -678,94 +768,244 @@
         </button>
       </div>
 
-      <div class="p-6 space-y-3 overflow-y-auto flex-1">
-        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
-          <span>현재 정산 요약 배너 HTML을 직접 수정하거나 복사/적용할 수 있습니다.</span>
+      <form onsubmit="handlePasscodeUpdate(event)" class="space-y-3.5 text-xs">
+        <div class="space-y-1">
+          <label for="currentPasscodeInput" class="block font-bold text-slate-700">현재 패스워드</label>
+          <input
+            id="currentPasscodeInput"
+            type="password"
+            required
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="newPasscodeInput" class="block font-bold text-slate-700">새 패스워드 (4자 이상)</label>
+          <input
+            id="newPasscodeInput"
+            type="password"
+            minlength="4"
+            required
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="confirmPasscodeInput" class="block font-bold text-slate-700">새 패스워드 확인</label>
+          <input
+            id="confirmPasscodeInput"
+            type="password"
+            minlength="4"
+            required
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+          />
+        </div>
+        <p id="passcodeModalError" class="hidden font-semibold text-rose-600"></p>
+
+        <div class="pt-2 flex items-center justify-between gap-2">
           <button
             type="button"
-            onclick="refreshGeneratedHtmlCode()"
-            class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition cursor-pointer"
+            onclick="resetPasscodeToDefault()"
+            class="px-3 py-2 rounded-xl font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
           >
-            현재 계산 결과로 다시 생성
+            기본값으로 재설정
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition cursor-pointer"
+          >
+            패스워드 저장
           </button>
         </div>
-        <textarea
-          id="htmlCodeTextarea"
-          rows="14"
-          spellcheck="false"
-          class="w-full font-mono text-xs bg-slate-950 text-emerald-300 rounded-2xl p-4 border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed"
-        ></textarea>
-      </div>
-
-      <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-end gap-2">
-        <button
-          type="button"
-          onclick="copyHtmlEditorCode()"
-          class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-slate-800 border border-slate-300 hover:bg-slate-100 transition cursor-pointer"
-        >
-          HTML 코드 복사
-        </button>
-        <button
-          type="button"
-          onclick="applyHtmlEditorCode()"
-          class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition cursor-pointer"
-        >
-          배너에 HTML 적용
-        </button>
-      </div>
+      </form>
     </div>
   </div>
 
-  <script>
-    /**
-     * 월 광고예산 구간별 대행비 기준표 (임의 할인 미적용 · 정액/정률 기준)
-     */
-    const PRICING_TIERS = [
-      {
-        id: 'tier-50',
-        label: '월 50만 원 이하',
-        monthlyFee: 100000,
-        twoMonthBudgetText: '2개월 광고비 100만 원 이하',
-        twoMonthFeeText: '2개월 대행비 20만 원',
-        rateText: '정액 월 10만 원',
-        scope: '기본 세팅 · 단일 캠페인 운영 · 주간 성과 점검'
-      },
-      {
-        id: 'tier-75',
-        label: '월 51만 ~ 75만 원',
-        monthlyFee: 150000,
-        twoMonthBudgetText: '2개월 광고비 102만~150만 원',
-        twoMonthFeeText: '2개월 대행비 30만 원',
-        rateText: '정액 월 15만 원',
-        scope: '광고세트 세분화 · 소재 교체 및 피로도 관리 · 전환 트래킹 확인'
-      },
-      {
-        id: 'tier-100',
-        label: '월 76만 ~ 100만 원',
-        monthlyFee: 200000,
-        twoMonthBudgetText: '2개월 광고비 152만~200만 원',
-        twoMonthFeeText: '2개월 대행비 40만 원',
-        rateText: '정액 월 20만 원',
-        scope: '소재 A/B 테스트 · 리타겟팅 세팅 · 예산 배분 및 주간 리포트'
-      },
-      {
-        id: 'tier-150',
-        label: '월 101만 ~ 150만 원',
-        monthlyFee: 270000,
-        twoMonthBudgetText: '2개월 광고비 202만~300만 원',
-        twoMonthFeeText: '2개월 대행비 54만 원',
-        rateText: '정액 월 27만 원',
-        scope: '퍼널별 캠페인 구성 · 고예산 효율 최적화 · 심화 운영 피드백'
-      },
-      {
-        id: 'tier-over',
-        label: '월 150만 원 초과',
-        monthlyFee: null,
-        twoMonthBudgetText: '2개월 광고비 300만 원 초과',
-        twoMonthFeeText: '2개월 대행비 (월 18% × 2)',
-        rateText: '월 예산의 18%',
-        scope: '세팅·최적화 공수 연동 · 다각도 소재 테스트 및 확장 운영'
+  <!-- HTML 코드 편집 모달 -->
+  <div id="htmlEditorModal" class="fixed inset-0 z-50 hidden bg-slate-950/75 flex items-center justify-center p-4 no-print">
+    <div class="bg-white text-slate-900 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3 bg-slate-50">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">ADPLANTERS HTML BANNER / SUMMARY EDITOR</span>
+          <h3 class="text-lg font-extrabold text-slate-900">애드플랜터스 정산 배너 HTML 코드 편집</h3>
+        </div>
+        <button
+    const STORAGE_KEY = 'adplanters_proprietary_scenarios_v2';
+    const PASSCODE_HASH_STORAGE_KEY = 'adplanters_gate_pass_hash_v1';
+    const PASSCODE_SESSION_KEY = 'adplanters_gate_unlocked_v1';
+    const DEFAULT_PASSCODE = '2026';
+    const DEFAULT_POLICY_NOTE =
+      '기존 입금된 30만 원 건은 그대로 존중해 진행하며, 다음 신규 수주 및 연장 건부터 애드플랜터스 고유 구간별 대행비 기준표로 정산합니다.';
+
+    async function sha256Hex(plainText) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(String(plainText));
+      const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function getExpectedPasscodeHash() {
+      try {
+        const stored = window.localStorage.getItem(PASSCODE_HASH_STORAGE_KEY);
+        if (stored && /^[0-9a-f]{64}$/i.test(stored)) {
+          return stored.toLowerCase();
+        }
+      } catch (err) {
+        // 스토리지 접근 불가 시 기본 해시 사용
       }
+      return sha256Hex(DEFAULT_PASSCODE);
+    }
+
+    function setUnlockedState(unlocked) {
+      document.body.classList.toggle('is-locked', !unlocked);
+      const overlay = document.getElementById('passwordGateOverlay');
+      if (overlay) {
+        overlay.classList.toggle('is-hidden', Boolean(unlocked));
+      }
+      try {
+        if (unlocked) {
+          window.sessionStorage.setItem(PASSCODE_SESSION_KEY, '1');
+        } else {
+          window.sessionStorage.removeItem(PASSCODE_SESSION_KEY);
+        }
+      } catch (err) {
+        // 세션스토리지 제한 무시
+      }
+    }
+
+    async function initPasswordGate() {
+      let alreadyUnlocked = false;
+      try {
+        alreadyUnlocked = window.sessionStorage.getItem(PASSCODE_SESSION_KEY) === '1';
+      } catch (err) {
+        alreadyUnlocked = false;
+      }
+
+      if (alreadyUnlocked) {
+        setUnlockedState(true);
+      } else {
+        setUnlockedState(false);
+        const inputEl = document.getElementById('gatePasswordInput');
+        if (inputEl) {
+          setTimeout(() => inputEl.focus(), 50);
+        }
+      }
+    }
+
+    function toggleGatePasswordVisibility() {
+      const inputEl = document.getElementById('gatePasswordInput');
+      const labelEl = document.getElementById('gateVisibilityLabel');
+      if (!inputEl || !labelEl) return;
+      const isPassword = inputEl.type === 'password';
+      inputEl.type = isPassword ? 'text' : 'password';
+      labelEl.textContent = isPassword ? '숨김' : '표시';
+    }
+
+    async function handlePasswordUnlock(event) {
+      event.preventDefault();
+      const inputEl = document.getElementById('gatePasswordInput');
+      const errEl = document.getElementById('gateErrorMessage');
+      if (!inputEl) return;
+
+      const entered = inputEl.value;
+      const expectedHash = await getExpectedPasscodeHash();
+      const enteredHash = await sha256Hex(entered);
+
+      if (enteredHash === expectedHash) {
+        if (errEl) errEl.classList.add('hidden');
+        inputEl.value = '';
+        setUnlockedState(true);
+        showToast('잠금이 해제되었습니다.');
+      } else {
+        if (errEl) errEl.classList.remove('hidden');
+        inputEl.select();
+      }
+    }
+
+    function lockPageNow() {
+      const inputEl = document.getElementById('gatePasswordInput');
+      const errEl = document.getElementById('gateErrorMessage');
+      if (inputEl) {
+        inputEl.value = '';
+        inputEl.type = 'password';
+      }
+      const labelEl = document.getElementById('gateVisibilityLabel');
+      if (labelEl) labelEl.textContent = '표시';
+      if (errEl) errEl.classList.add('hidden');
+      setUnlockedState(false);
+      if (inputEl) {
+        setTimeout(() => inputEl.focus(), 50);
+      }
+    }
+
+    function openPasscodeModal() {
+      const modal = document.getElementById('passcodeChangeModal');
+      const errEl = document.getElementById('passcodeModalError');
+      if (errEl) {
+        errEl.textContent = '';
+        errEl.classList.add('hidden');
+      }
+      ['currentPasscodeInput', 'newPasscodeInput', 'confirmPasscodeInput'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closePasscodeModal() {
+      const modal = document.getElementById('passcodeChangeModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function handlePasscodeUpdate(event) {
+      event.preventDefault();
+      const currEl = document.getElementById('currentPasscodeInput');
+      const nextEl = document.getElementById('newPasscodeInput');
+      const confEl = document.getElementById('confirmPasscodeInput');
+      const errEl = document.getElementById('passcodeModalError');
+      if (!currEl || !nextEl || !confEl || !errEl) return;
+
+      const expectedHash = await getExpectedPasscodeHash();
+      const currHash = await sha256Hex(currEl.value);
+
+      if (currHash !== expectedHash) {
+        errEl.textContent = '현재 패스워드가 올바르지 않습니다.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (nextEl.value.length < 4) {
+        errEl.textContent = '새 패스워드는 4자 이상 입력해 주세요.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (nextEl.value !== confEl.value) {
+        errEl.textContent = '새 패스워드 확인 값이 일치하지 않습니다.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const nextHash = await sha256Hex(nextEl.value);
+      try {
+        window.localStorage.setItem(PASSCODE_HASH_STORAGE_KEY, nextHash);
+      } catch (err) {
+        // 스토리지 제한 무시
+      }
+      errEl.classList.add('hidden');
+      closePasscodeModal();
+      showToast('접속 패스워드가 변경되었습니다.');
+    }
+
+    async function resetPasscodeToDefault() {
+      const defaultHash = await sha256Hex(DEFAULT_PASSCODE);
+      try {
+        window.localStorage.setItem(PASSCODE_HASH_STORAGE_KEY, defaultHash);
+      } catch (err) {
+        // 스토리지 제한 무시
+      }
+      closePasscodeModal();
+      showToast('접속 패스워드가 초기 기본값으로 재설정되었습니다.');
+    }
     ];
 
     const STORAGE_KEY = 'adplanters_noah_scenarios_v2';
@@ -825,6 +1065,155 @@
     let isTableBannerOnlyMode = false; // 기준표 배너 단독 보기 상태
     let customBannerHtmlOverride = null;
     let nextSlotId = getMaxSlotId(scenarioSlotsMap) + 1;
+
+    /**
+     * SHA-256 해시 계산 함수 (Web Crypto API 사용 및 폴백 지원)
+     */
+    async function computeSha256Hex(plainText) {
+      const msgBuffer = new TextEncoder().encode(String(plainText));
+      if (window.crypto && window.crypto.subtle) {
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+      }
+      // 비보안 컨텍스트(예: 일부 file:// 환경) 대비 결정적 다중 라운드 해시 폴백
+      let h1 = 0x811c9dc5;
+      let h2 = 0x01000193;
+      for (let round = 0; round < 4; round++) {
+        for (let i = 0; i < msgBuffer.length; i++) {
+          h1 ^= (msgBuffer[i] + round * 17) & 0xff;
+          h1 = Math.imul(h1, 0x01000193);
+          h2 ^= (msgBuffer[i] * 31 + round) & 0xff;
+          h2 = Math.imul(h2, 0x85ebca6b);
+        }
+      }
+      return ((h1 >>> 0).toString(16).padStart(8, '0') + (h2 >>> 0).toString(16).padStart(8, '0')).repeat(4);
+    }
+
+    function getConfiguredPasscodeHash() {
+      try {
+        const saved = window.localStorage.getItem(PASSCODE_HASH_STORAGE_KEY);
+        if (saved && typeof saved === 'string' && saved.trim().length > 0) {
+          return saved.trim();
+        }
+      } catch (err) {
+        // 무시
+      }
+      return BUILTIN_DEFAULT_PASSCODE_HASH;
+    }
+
+    function setAppLockedState(locked) {
+      const overlay = document.getElementById('passwordGateOverlay');
+      const errEl = document.getElementById('passwordErrorMsg');
+      document.body.classList.toggle('app-locked', Boolean(locked));
+
+      if (overlay) {
+        if (locked) {
+          overlay.classList.remove('hidden');
+          const inputEl = document.getElementById('gatePasswordInput');
+          if (inputEl) {
+            inputEl.value = '';
+            setTimeout(() => inputEl.focus(), 50);
+          }
+        } else {
+          overlay.classList.add('hidden');
+          if (errEl) errEl.classList.add('hidden');
+        }
+      }
+    }
+
+    async function handleUnlockSubmit(event) {
+      if (event) event.preventDefault();
+      const inputEl = document.getElementById('gatePasswordInput');
+      const errEl = document.getElementById('passwordErrorMsg');
+      if (!inputEl) return;
+
+      const entered = inputEl.value;
+      if (!entered) {
+        if (errEl) {
+          errEl.textContent = '패스워드를 입력해 주세요.';
+          errEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const enteredHash = await computeSha256Hex(entered);
+      const expectedHash = getConfiguredPasscodeHash();
+      const isDefaultMatch =
+        expectedHash === BUILTIN_DEFAULT_PASSCODE_HASH && entered === DEFAULT_PASSCODE_PLAIN;
+
+      if (enteredHash === expectedHash || isDefaultMatch) {
+        setAppLockedState(false);
+        showToast('패스워드가 확인되어 화면 잠금이 해제되었습니다.');
+      } else {
+        if (errEl) {
+          errEl.textContent = '패스워드가 일치하지 않습니다. 다시 확인해 주세요.';
+          errEl.classList.remove('hidden');
+        }
+        inputEl.focus();
+      }
+    }
+
+    function quickFillDefaultPasscode() {
+      const inputEl = document.getElementById('gatePasswordInput');
+      const errEl = document.getElementById('passwordErrorMsg');
+      if (inputEl) {
+        inputEl.type = 'text';
+        const visLabel = document.getElementById('gateVisibilityLabel');
+        if (visLabel) visLabel.textContent = '숨김';
+        inputEl.value = DEFAULT_PASSCODE_PLAIN;
+        inputEl.focus();
+      }
+      if (errEl) errEl.classList.add('hidden');
+    }
+
+    function toggleGatePasswordVisibility() {
+      const inputEl = document.getElementById('gatePasswordInput');
+      const labelEl = document.getElementById('gateVisibilityLabel');
+      if (!inputEl) return;
+      const isPw = inputEl.type === 'password';
+      inputEl.type = isPw ? 'text' : 'password';
+      if (labelEl) labelEl.textContent = isPw ? '숨김' : '보기';
+    }
+
+    function toggleChangePasscodePanel() {
+      const panel = document.getElementById('changePasscodePanel');
+      if (panel) panel.classList.toggle('hidden');
+    }
+
+    async function saveNewPasscodeHash() {
+      const newInput = document.getElementById('newPasscodeInput');
+      if (!newInput) return;
+      const nextPass = newInput.value.trim();
+      if (nextPass.length < 2) {
+        showToast('새 패스워드를 2자 이상 입력해 주세요.');
+        return;
+      }
+      const nextHash = await computeSha256Hex(nextPass);
+      try {
+        window.localStorage.setItem(PASSCODE_HASH_STORAGE_KEY, nextHash);
+      } catch (err) {
+        // 무시
+      }
+      newInput.value = '';
+      setAppLockedState(false);
+      showToast('새 패스워드가 SHA-256 해시로 저장되었습니다.');
+    }
+
+    function resetPasscodeToDefault() {
+      try {
+        window.localStorage.removeItem(PASSCODE_HASH_STORAGE_KEY);
+      } catch (err) {
+        // 무시
+      }
+      setAppLockedState(false);
+      showToast('패스워드가 기본값(2026)으로 복원되었습니다.');
+    }
+
+    function lockApplicationNow() {
+      setAppLockedState(true);
+      showToast('화면이 블러 잠금 상태로 전환되었습니다.');
+    }
 
     function getActiveSlots() {
       if (!scenarioSlotsMap[activeScenarioKey]) {
@@ -1192,7 +1581,7 @@
         : '';
 
       return `<div style="max-width:520px;margin:0 auto;padding:24px;border-radius:24px;background:#0f172a;color:#ffffff;font-family:'Noto Sans KR',sans-serif;">
-  <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:#a5b4fc;">SETTLEMENT SUMMARY</div>
+  <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:#a5b4fc;">ADPLANTERS SETTLEMENT SUMMARY</div>
   <h3 style="margin:4px 0 16px;font-size:20px;font-weight:800;">구간별 정산 계산 결과</h3>
   <div style="font-size:14px;line-height:2;color:#cbd5e1;">
     <div style="display:flex;justify-content:space-between;"><span>진행 계정 수</span><strong style="color:#fff;">${slots.length}개 계정</strong></div>
@@ -1626,7 +2015,7 @@
       }).join('\n');
 
       const lines = [
-        `[애드플랜터스 × 노아유니버스컴퍼니] 메타광고 정산 안내`,
+        `[애드플랜터스(AdPlanters)] 고유 메타광고 정산 안내`,
         `- 진행 계정: ${slots.length}개`,
         `- 월 광고비 합계: ${formatManWon(totalMonthlyBudget)} (계약 기간 합계 ${formatManWon(totalPeriodBudget)})`,
         detailLines,
@@ -1665,7 +2054,7 @@
         .replace(/"/g, '&quot;');
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const yearEl = document.getElementById('currentYear');
       if (yearEl) yearEl.textContent = new Date().getFullYear();
 
@@ -1676,6 +2065,7 @@
       syncGlobalMonthControlsUI();
       syncPolicyNoteInputUI();
       updateSimulator();
+      await initPasswordGate();
     });
   </script>
 </body>
