@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>애드플랜터스(AdPlanters) | 메타광고 대행 고유 단가표 &amp; 정산 시뮬레이터</title>
+  <title>애드플랜터스(AdPlanters) | 메타광고 대행 고유 단가표 &amp; 정산 계산기</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,18 +38,18 @@
       color: #0f172a;
     }
 
-    /* 초기 패스워드 잠금 시 본문 전체 블러 및 인터랙션 차단 */
-    body.app-locked #appShell {
+    /* 초기 패스워드 잠금 시 본문 블러 및 클릭 차단 */
+    body.is-locked #pageContentWrapper {
       filter: blur(14px) saturate(0.75);
       pointer-events: none;
       user-select: none;
       -webkit-user-select: none;
     }
-    body.app-locked {
+    body.is-locked {
       overflow: hidden;
     }
 
-    /* 커스텀 범위 슬라이더 스타일 */
+    /* 범위 슬라이더 스타일 */
     input[type="range"].brand-slider {
       -webkit-appearance: none;
       appearance: none;
@@ -77,7 +77,7 @@
       transform: scale(1.1);
     }
 
-    /* 정산 요약 배너 단독 공유 모드(body.banner-only): 관리자/편집 UI 숨기고 배너 카드만 단독 중앙 표시 */
+    /* 정산 요약 배너 단독 공유 모드 (body.banner-only) */
     body.banner-only {
       background-color: #f1f5f9;
       min-height: 100vh;
@@ -86,7 +86,7 @@
       justify-content: center;
     }
     body.banner-only header,
-    body.banner-only #losslessNoticeBar,
+    body.banner-only #proprietaryNoticeBar,
     body.banner-only #heroSection,
     body.banner-only #rateCardSection,
     body.banner-only #calculatorSectionHeader,
@@ -94,6 +94,7 @@
     body.banner-only #guideSection,
     body.banner-only footer,
     body.banner-only #htmlEditorModal,
+    body.banner-only #passcodeChangeModal,
     body.banner-only .editor-only-ui {
       display: none !important;
     }
@@ -122,7 +123,7 @@
       display: flex !important;
     }
 
-    /* 기준표 단독 공유 배너 모드(body.table-banner-only): 기준표 배너 카드만 단독 중앙 표시 */
+    /* 기준표 단독 공유 배너 모드 (body.table-banner-only) */
     body.table-banner-only {
       background-color: #f1f5f9;
       min-height: 100vh;
@@ -131,7 +132,7 @@
       justify-content: center;
     }
     body.table-banner-only header,
-    body.table-banner-only #losslessNoticeBar,
+    body.table-banner-only #proprietaryNoticeBar,
     body.table-banner-only #heroSection,
     body.table-banner-only #rateCardSection,
     body.table-banner-only #calculatorSection,
@@ -150,16 +151,6 @@
       display: block !important;
     }
 
-    /* 초기 블러 처리 및 패스워드 잠금 오버레이 */
-    body.is-locked #pageContentWrapper {
-      filter: blur(14px);
-      pointer-events: none;
-      user-select: none;
-    }
-    #passwordGateOverlay.is-hidden {
-      display: none !important;
-    }
-
     @media print {
       .no-print {
         display: none !important;
@@ -174,10 +165,10 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-brand-100 selection:text-brand-800 is-locked">
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-brand-100 selection:text-brand-800">
 
   <!-- 패스워드 잠금 오버레이 (비밀번호 힌트 또는 자동 입력 버튼 미노출) -->
-  <div id="passwordGateOverlay" class="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-4 no-print">
+  <div id="passwordGateOverlay" class="fixed inset-0 z-50 hidden bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-4 no-print">
     <div class="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5">
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-sm shrink-0">
@@ -190,7 +181,7 @@
       </div>
 
       <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-        애드플랜터스(AdPlanters) 고유 메타광고 대행 단가표 및 정산 시뮬레이터를 열람하려면 접속 패스워드를 입력하세요.
+        애드플랜터스(AdPlanters) 고유 메타광고 대행 단가표 및 정산 계산기를 열람하려면 접속 패스워드를 입력하세요.
       </p>
 
       <form id="passwordGateForm" onsubmit="handlePasswordUnlock(event)" class="space-y-4">
@@ -202,13 +193,13 @@
               type="password"
               autocomplete="current-password"
               placeholder="패스워드 입력"
-              required
               class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 pr-16 text-sm font-semibold text-slate-900 focus:bg-white focus:border-brand-600 focus:outline-none"
             />
             <button
               type="button"
+              id="gateToggleVisibilityBtn"
               onclick="toggleGatePasswordVisibility()"
-              class="absolute right-2.5 px-2 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-200/70 transition cursor-pointer"
+              class="absolute right-2.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-700 bg-slate-200/80 hover:bg-slate-300/80 transition cursor-pointer"
             >
               <span id="gateVisibilityLabel">표시</span>
             </button>
@@ -220,6 +211,7 @@
 
         <button
           type="submit"
+          id="gateUnlockSubmitBtn"
           class="w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-sm transition cursor-pointer"
         >
           잠금 해제 및 단가표 열기
@@ -228,7 +220,7 @@
     </div>
   </div>
 
-  <!-- 블러 대상 메인 콘텐츠 래퍼 -->
+  <!-- 메인 콘텐츠 래퍼 -->
   <div id="pageContentWrapper">
     <!-- 상단 네비게이션 헤더 -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
@@ -270,7 +262,7 @@
             onclick="openPasscodeModal()"
             class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
           >
-            <span>패스워드 설정</span>
+            <span>비밀번호 변경</span>
           </button>
           <button
             type="button"
@@ -293,12 +285,12 @@
       </div>
     </header>
 
-    <!-- 무손실 전체 반영 안내 바 -->
-    <div id="losslessNoticeBar" class="bg-indigo-50/90 border-b border-indigo-100 no-print">
+    <!-- 고유 단가표 기준 안내 바 -->
+    <div id="proprietaryNoticeBar" class="bg-indigo-50/90 border-b border-indigo-100 no-print">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-indigo-900">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 rounded-md bg-indigo-600 text-white font-bold text-[11px]">애드플랜터스 고유 기준</span>
-          <span>초기 블러·패스워드 잠금 · 시나리오별 저장 상태 유지 · 계정별/전체 계약 개월 수 수정 · 정산 배너 &amp; 기준표 배너 URL 공유</span>
+          <span>초기 블러·패스워드 잠금 · 시나리오별 저장 상태 유지 · 전체/계정별 계약 개월 수 수정 · 정산 배너 &amp; 기준표 배너 URL 공유</span>
         </div>
         <span class="text-[11px] text-indigo-700 font-medium">임의 할인 미적용 · 정액/정률 기준표 적용</span>
       </div>
@@ -322,7 +314,7 @@
               <span>애드플랜터스(AdPlanters) 고유 운영 기준</span>
             </div>
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              애드플랜터스 메타광고 대행 고유 단가표 &amp; <span class="text-brand-600">정산 시뮬레이터</span>
+              애드플랜터스 메타광고 대행 고유 단가표 &amp; <span class="text-brand-600">정산 계산기</span>
             </h1>
             <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
               <strong>애드플랜터스(AdPlanters)</strong>가 자체 운영 공수와 캠페인 세팅·소재 테스트·성과 최적화 기준에 따라 수립한 고유 메타광고 대행 단가표입니다.
@@ -452,7 +444,7 @@
         </div>
       </section>
 
-      <!-- 2. 정산 시뮬레이터 & 공유 배너 섹션 -->
+      <!-- 2. 정산 계산기 & 공유 배너 섹션 -->
       <section id="calculatorSection" class="space-y-4">
         <div id="calculatorSectionHeader" class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
@@ -581,7 +573,7 @@
                 </span>
               </div>
 
-              <!-- 적용 원칙 안내 칸 (편집기 모드: textarea + 내용 지우기/기본 문구 / 배너 모드: 읽기 전용 텍스트) -->
+              <!-- 적용 원칙 안내 칸 -->
               <div id="policyNoteBox" class="bg-slate-800/85 border border-slate-700 rounded-2xl p-3.5 space-y-2">
                 <div id="policyNoteTextareaWrap" class="space-y-2">
                   <div class="flex items-center justify-between gap-2">
@@ -662,7 +654,7 @@
                   onclick="copySummaryText()"
                   class="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition cursor-pointer text-center"
                 >
-                  공유용 요약 텍스트 복사
+                  파트너 공유용 텍스트 복사
                 </button>
                 <button
                   type="button"
@@ -748,19 +740,19 @@
     </footer>
   </div>
 
-  <!-- 패스워드 변경/초기화 모달 -->
+  <!-- 비밀번호 변경/초기화 모달 -->
   <div id="passcodeChangeModal" class="fixed inset-0 z-50 hidden bg-slate-950/75 flex items-center justify-center p-4 no-print">
     <div class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
       <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">PASSCODE SETTINGS</span>
-          <h3 class="text-lg font-extrabold text-slate-900">접속 패스워드 변경</h3>
+          <h3 class="text-lg font-extrabold text-slate-900">접속 비밀번호 변경</h3>
         </div>
         <button
           type="button"
           onclick="closePasscodeModal()"
           class="p-1.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer"
-          aria-label="패스워드 설정 닫기"
+          aria-label="비밀번호 설정 닫기"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -770,7 +762,7 @@
 
       <form onsubmit="handlePasscodeUpdate(event)" class="space-y-3.5 text-xs">
         <div class="space-y-1">
-          <label for="currentPasscodeInput" class="block font-bold text-slate-700">현재 패스워드</label>
+          <label for="currentPasscodeInput" class="block font-bold text-slate-700">현재 비밀번호</label>
           <input
             id="currentPasscodeInput"
             type="password"
@@ -779,21 +771,21 @@
           />
         </div>
         <div class="space-y-1">
-          <label for="newPasscodeInput" class="block font-bold text-slate-700">새 패스워드 (4자 이상)</label>
+          <label for="newPasscodeInput" class="block font-bold text-slate-700">새 비밀번호 (2자 이상)</label>
           <input
             id="newPasscodeInput"
             type="password"
-            minlength="4"
+            minlength="2"
             required
             class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
           />
         </div>
         <div class="space-y-1">
-          <label for="confirmPasscodeInput" class="block font-bold text-slate-700">새 패스워드 확인</label>
+          <label for="confirmPasscodeInput" class="block font-bold text-slate-700">새 비밀번호 확인</label>
           <input
             id="confirmPasscodeInput"
             type="password"
-            minlength="4"
+            minlength="2"
             required
             class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
           />
@@ -806,13 +798,13 @@
             onclick="resetPasscodeToDefault()"
             class="px-3 py-2 rounded-xl font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
           >
-            기본값으로 재설정
+            기본값(2026)으로 재설정
           </button>
           <button
             type="submit"
             class="px-4 py-2 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition cursor-pointer"
           >
-            패스워드 저장
+            비밀번호 저장
           </button>
         </div>
       </form>
@@ -828,189 +820,112 @@
           <h3 class="text-lg font-extrabold text-slate-900">애드플랜터스 정산 배너 HTML 코드 편집</h3>
         </div>
         <button
-    const STORAGE_KEY = 'adplanters_proprietary_scenarios_v2';
-    const PASSCODE_HASH_STORAGE_KEY = 'adplanters_gate_pass_hash_v1';
-    const PASSCODE_SESSION_KEY = 'adplanters_gate_unlocked_v1';
+          type="button"
+          onclick="closeHtmlEditorModal()"
+          class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 transition cursor-pointer"
+          aria-label="HTML 편집기 닫기"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-3 flex-1">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+          <span>정산 요약 배너 HTML 코드를 직접 수정하고 미리보기에 반영하거나 복사할 수 있습니다.</span>
+          <button
+            type="button"
+            onclick="refreshGeneratedHtmlCode()"
+            class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold transition cursor-pointer"
+          >
+            현재 계산값으로 HTML 다시 생성
+          </button>
+        </div>
+        <textarea
+          id="htmlCodeTextarea"
+          rows="14"
+          spellcheck="false"
+          class="w-full rounded-2xl bg-slate-950 text-emerald-300 font-mono text-xs p-4 leading-relaxed border border-slate-800 focus:border-indigo-500 focus:outline-none"
+        ></textarea>
+      </div>
+
+      <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-end gap-2">
+        <button
+          type="button"
+          onclick="closeHtmlEditorModal()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+        >
+          취소
+        </button>
+        <button
+          type="button"
+          onclick="copyHtmlEditorCode()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition cursor-pointer"
+        >
+          HTML 코드 복사
+        </button>
+        <button
+          type="button"
+          onclick="applyHtmlEditorCode()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition cursor-pointer"
+        >
+          배너에 HTML 적용
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PRICING_TIERS = [
+      {
+        label: '월 50만 원 이하',
+        monthlyFee: 100000,
+        twoMonthFeeText: '2개월 대행비 20만 원',
+        twoMonthBudgetText: '2개월 광고비 100만 원 이하',
+        rateText: '정액 월 10만 원',
+        scope: '기본 세팅 · 단일 캠페인 운영 · 주간 성과 점검'
+      },
+      {
+        label: '월 51만 ~ 75만 원',
+        monthlyFee: 150000,
+        twoMonthFeeText: '2개월 대행비 30만 원',
+        twoMonthBudgetText: '2개월 광고비 102만~150만 원',
+        rateText: '정액 월 15만 원',
+        scope: '광고세트 세분화 · 소재 교체 및 피로도 관리 · 전환 트래킹 확인'
+      },
+      {
+        label: '월 76만 ~ 100만 원',
+        monthlyFee: 200000,
+        twoMonthFeeText: '2개월 대행비 40만 원',
+        twoMonthBudgetText: '2개월 광고비 152만~200만 원',
+        rateText: '정액 월 20만 원',
+        scope: '소재 A/B 테스트 · 리타겟팅 세팅 · 예산 배분 및 주간 리포트'
+      },
+      {
+        label: '월 101만 ~ 150만 원',
+        monthlyFee: 270000,
+        twoMonthFeeText: '2개월 대행비 54만 원',
+        twoMonthBudgetText: '2개월 광고비 202만~300만 원',
+        rateText: '정액 월 27만 원',
+        scope: '퍼널별 캠페인 구성 · 고예산 효율 최적화 · 심화 운영 피드백'
+      },
+      {
+        label: '월 150만 원 초과',
+        monthlyFee: null,
+        twoMonthFeeText: '2개월 대행비 (월 18% × 2)',
+        twoMonthBudgetText: '2개월 광고비 300만 원 초과',
+        rateText: '월 예산의 18%',
+        scope: '세팅·최적화 공수 연동 · 다각도 소재 테스트 및 확장 운영'
+      }
+    ];
+
+    const STORAGE_KEY = 'adplanters_proprietary_state_v3';
+    const PASSCODE_HASH_STORAGE_KEY = 'adplanters_proprietary_pass_hash_v1';
+    const PASSCODE_SESSION_KEY = 'adplanters_proprietary_unlocked_v1';
     const DEFAULT_PASSCODE = '2026';
     const DEFAULT_POLICY_NOTE =
       '기존 입금된 30만 원 건은 그대로 존중해 진행하며, 다음 신규 수주 및 연장 건부터 애드플랜터스 고유 구간별 대행비 기준표로 정산합니다.';
-
-    async function sha256Hex(plainText) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(String(plainText));
-      const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    async function getExpectedPasscodeHash() {
-      try {
-        const stored = window.localStorage.getItem(PASSCODE_HASH_STORAGE_KEY);
-        if (stored && /^[0-9a-f]{64}$/i.test(stored)) {
-          return stored.toLowerCase();
-        }
-      } catch (err) {
-        // 스토리지 접근 불가 시 기본 해시 사용
-      }
-      return sha256Hex(DEFAULT_PASSCODE);
-    }
-
-    function setUnlockedState(unlocked) {
-      document.body.classList.toggle('is-locked', !unlocked);
-      const overlay = document.getElementById('passwordGateOverlay');
-      if (overlay) {
-        overlay.classList.toggle('is-hidden', Boolean(unlocked));
-      }
-      try {
-        if (unlocked) {
-          window.sessionStorage.setItem(PASSCODE_SESSION_KEY, '1');
-        } else {
-          window.sessionStorage.removeItem(PASSCODE_SESSION_KEY);
-        }
-      } catch (err) {
-        // 세션스토리지 제한 무시
-      }
-    }
-
-    async function initPasswordGate() {
-      let alreadyUnlocked = false;
-      try {
-        alreadyUnlocked = window.sessionStorage.getItem(PASSCODE_SESSION_KEY) === '1';
-      } catch (err) {
-        alreadyUnlocked = false;
-      }
-
-      if (alreadyUnlocked) {
-        setUnlockedState(true);
-      } else {
-        setUnlockedState(false);
-        const inputEl = document.getElementById('gatePasswordInput');
-        if (inputEl) {
-          setTimeout(() => inputEl.focus(), 50);
-        }
-      }
-    }
-
-    function toggleGatePasswordVisibility() {
-      const inputEl = document.getElementById('gatePasswordInput');
-      const labelEl = document.getElementById('gateVisibilityLabel');
-      if (!inputEl || !labelEl) return;
-      const isPassword = inputEl.type === 'password';
-      inputEl.type = isPassword ? 'text' : 'password';
-      labelEl.textContent = isPassword ? '숨김' : '표시';
-    }
-
-    async function handlePasswordUnlock(event) {
-      event.preventDefault();
-      const inputEl = document.getElementById('gatePasswordInput');
-      const errEl = document.getElementById('gateErrorMessage');
-      if (!inputEl) return;
-
-      const entered = inputEl.value;
-      const expectedHash = await getExpectedPasscodeHash();
-      const enteredHash = await sha256Hex(entered);
-
-      if (enteredHash === expectedHash) {
-        if (errEl) errEl.classList.add('hidden');
-        inputEl.value = '';
-        setUnlockedState(true);
-        showToast('잠금이 해제되었습니다.');
-      } else {
-        if (errEl) errEl.classList.remove('hidden');
-        inputEl.select();
-      }
-    }
-
-    function lockPageNow() {
-      const inputEl = document.getElementById('gatePasswordInput');
-      const errEl = document.getElementById('gateErrorMessage');
-      if (inputEl) {
-        inputEl.value = '';
-        inputEl.type = 'password';
-      }
-      const labelEl = document.getElementById('gateVisibilityLabel');
-      if (labelEl) labelEl.textContent = '표시';
-      if (errEl) errEl.classList.add('hidden');
-      setUnlockedState(false);
-      if (inputEl) {
-        setTimeout(() => inputEl.focus(), 50);
-      }
-    }
-
-    function openPasscodeModal() {
-      const modal = document.getElementById('passcodeChangeModal');
-      const errEl = document.getElementById('passcodeModalError');
-      if (errEl) {
-        errEl.textContent = '';
-        errEl.classList.add('hidden');
-      }
-      ['currentPasscodeInput', 'newPasscodeInput', 'confirmPasscodeInput'].forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-      if (modal) modal.classList.remove('hidden');
-    }
-
-    function closePasscodeModal() {
-      const modal = document.getElementById('passcodeChangeModal');
-      if (modal) modal.classList.add('hidden');
-    }
-
-    async function handlePasscodeUpdate(event) {
-      event.preventDefault();
-      const currEl = document.getElementById('currentPasscodeInput');
-      const nextEl = document.getElementById('newPasscodeInput');
-      const confEl = document.getElementById('confirmPasscodeInput');
-      const errEl = document.getElementById('passcodeModalError');
-      if (!currEl || !nextEl || !confEl || !errEl) return;
-
-      const expectedHash = await getExpectedPasscodeHash();
-      const currHash = await sha256Hex(currEl.value);
-
-      if (currHash !== expectedHash) {
-        errEl.textContent = '현재 패스워드가 올바르지 않습니다.';
-        errEl.classList.remove('hidden');
-        return;
-      }
-
-      if (nextEl.value.length < 4) {
-        errEl.textContent = '새 패스워드는 4자 이상 입력해 주세요.';
-        errEl.classList.remove('hidden');
-        return;
-      }
-
-      if (nextEl.value !== confEl.value) {
-        errEl.textContent = '새 패스워드 확인 값이 일치하지 않습니다.';
-        errEl.classList.remove('hidden');
-        return;
-      }
-
-      const nextHash = await sha256Hex(nextEl.value);
-      try {
-        window.localStorage.setItem(PASSCODE_HASH_STORAGE_KEY, nextHash);
-      } catch (err) {
-        // 스토리지 제한 무시
-      }
-      errEl.classList.add('hidden');
-      closePasscodeModal();
-      showToast('접속 패스워드가 변경되었습니다.');
-    }
-
-    async function resetPasscodeToDefault() {
-      const defaultHash = await sha256Hex(DEFAULT_PASSCODE);
-      try {
-        window.localStorage.setItem(PASSCODE_HASH_STORAGE_KEY, defaultHash);
-      } catch (err) {
-        // 스토리지 제한 무시
-      }
-      closePasscodeModal();
-      showToast('접속 패스워드가 초기 기본값으로 재설정되었습니다.');
-    }
-    ];
-
-    const STORAGE_KEY = 'adplanters_noah_scenarios_v2';
-    const DEFAULT_POLICY_NOTE =
-      '오늘 입금된 30만 원 건은 그대로 존중해 진행하며, 다음 신규 수주 및 연장 건부터 구간별 대행비 기준표로 정산합니다.';
 
     function clampMonths(val, fallback = 2) {
       const num = parseInt(val, 10);
@@ -1061,158 +976,259 @@
       initialBase: cloneSlots(DEFAULT_SCENARIO_SLOTS.initialBase, 2)
     };
     let policyNoteText = DEFAULT_POLICY_NOTE;
-    let isBannerOnlyMode = false;      // 정산 요약 배너 단독 보기 상태
-    let isTableBannerOnlyMode = false; // 기준표 배너 단독 보기 상태
+    let isBannerOnlyMode = false;
+    let isTableBannerOnlyMode = false;
     let customBannerHtmlOverride = null;
     let nextSlotId = getMaxSlotId(scenarioSlotsMap) + 1;
 
     /**
-     * SHA-256 해시 계산 함수 (Web Crypto API 사용 및 폴백 지원)
+     * 결정적 동기식 해시 함수 (crypto.subtle 미지원 또는 실패 시에도 항상 동일하게 동작)
      */
-    async function computeSha256Hex(plainText) {
-      const msgBuffer = new TextEncoder().encode(String(plainText));
-      if (window.crypto && window.crypto.subtle) {
-        const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-      }
-      // 비보안 컨텍스트(예: 일부 file:// 환경) 대비 결정적 다중 라운드 해시 폴백
+    function fallbackSyncHashHex(plainText) {
+      const bytes = new TextEncoder().encode(String(plainText));
       let h1 = 0x811c9dc5;
       let h2 = 0x01000193;
-      for (let round = 0; round < 4; round++) {
-        for (let i = 0; i < msgBuffer.length; i++) {
-          h1 ^= (msgBuffer[i] + round * 17) & 0xff;
-          h1 = Math.imul(h1, 0x01000193);
-          h2 ^= (msgBuffer[i] * 31 + round) & 0xff;
-          h2 = Math.imul(h2, 0x85ebca6b);
+      let h3 = 0x9e3779b9;
+      let h4 = 0x85ebca6b;
+      for (let round = 0; round < 6; round++) {
+        for (let i = 0; i < bytes.length; i++) {
+          const b = bytes[i];
+          h1 = Math.imul(h1 ^ ((b + round * 13) & 0xff), 0x01000193);
+          h2 = Math.imul(h2 ^ ((b * 17 + round) & 0xff), 0x85ebca6b);
+          h3 = Math.imul(h3 ^ ((b * 29 + i) & 0xff), 0xc2b2ae35);
+          h4 = Math.imul(h4 ^ ((b + round * 37 + i) & 0xff), 0x27d4eb2f);
         }
       }
-      return ((h1 >>> 0).toString(16).padStart(8, '0') + (h2 >>> 0).toString(16).padStart(8, '0')).repeat(4);
+      return (
+        (h1 >>> 0).toString(16).padStart(8, '0') +
+        (h2 >>> 0).toString(16).padStart(8, '0') +
+        (h3 >>> 0).toString(16).padStart(8, '0') +
+        (h4 >>> 0).toString(16).padStart(8, '0')
+      );
     }
 
-    function getConfiguredPasscodeHash() {
+    /**
+     * 패스워드 검증용 해시 계산: Web Crypto SHA-256 우선 사용 후 실패 시 동기 폴백 해시 반환
+     */
+    async function computePasscodeHash(plainText) {
+      const normalized = String(plainText);
       try {
-        const saved = window.localStorage.getItem(PASSCODE_HASH_STORAGE_KEY);
-        if (saved && typeof saved === 'string' && saved.trim().length > 0) {
-          return saved.trim();
+        if (window.crypto && window.crypto.subtle && typeof window.crypto.subtle.digest === 'function') {
+          const encoder = new TextEncoder();
+          const hashBuffer = await window.crypto.subtle.digest('SHA-256', encoder.encode(normalized));
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          return 'sha256:' + hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
         }
       } catch (err) {
-        // 무시
+        // crypto.subtle 비가용 환경에서는 동기 폴백 사용
       }
-      return BUILTIN_DEFAULT_PASSCODE_HASH;
+      return 'sync:' + fallbackSyncHashHex(normalized);
     }
 
-    function setAppLockedState(locked) {
+    async function verifyPasscodeInput(plainText) {
+      const entered = String(plainText || '');
+      let storedRecord = '';
+      try {
+        storedRecord = window.localStorage.getItem(PASSCODE_HASH_STORAGE_KEY) || '';
+      } catch (err) {
+        storedRecord = '';
+      }
+
+      const expectedDefaultSubtle = await computePasscodeHash(DEFAULT_PASSCODE);
+      const expectedDefaultSync = 'sync:' + fallbackSyncHashHex(DEFAULT_PASSCODE);
+      const enteredSubtle = await computePasscodeHash(entered);
+      const enteredSync = 'sync:' + fallbackSyncHashHex(entered);
+
+      if (!storedRecord) {
+        return entered === DEFAULT_PASSCODE || enteredSubtle === expectedDefaultSubtle || enteredSync === expectedDefaultSync;
+      }
+
+      if (storedRecord.startsWith('sha256:')) {
+        return enteredSubtle === storedRecord || enteredSync === 'sync:' + fallbackSyncHashHex(DEFAULT_PASSCODE) && entered === DEFAULT_PASSCODE;
+      }
+      if (storedRecord.startsWith('sync:')) {
+        return enteredSync === storedRecord;
+      }
+      return entered === storedRecord;
+    }
+
+    function isAnyBannerViewActive() {
+      return Boolean(isBannerOnlyMode || isTableBannerOnlyMode);
+    }
+
+    function setUnlockedState(unlocked) {
+      const shouldLock = !unlocked && !isAnyBannerViewActive();
+      document.body.classList.toggle('is-locked', shouldLock);
       const overlay = document.getElementById('passwordGateOverlay');
-      const errEl = document.getElementById('passwordErrorMsg');
-      document.body.classList.toggle('app-locked', Boolean(locked));
-
       if (overlay) {
-        if (locked) {
-          overlay.classList.remove('hidden');
-          const inputEl = document.getElementById('gatePasswordInput');
-          if (inputEl) {
-            inputEl.value = '';
-            setTimeout(() => inputEl.focus(), 50);
-          }
-        } else {
-          overlay.classList.add('hidden');
-          if (errEl) errEl.classList.add('hidden');
+        overlay.classList.toggle('hidden', !shouldLock);
+      }
+      try {
+        if (unlocked) {
+          window.sessionStorage.setItem(PASSCODE_SESSION_KEY, '1');
+        } else if (shouldLock) {
+          window.sessionStorage.removeItem(PASSCODE_SESSION_KEY);
         }
+      } catch (err) {
+        // 세션스토리지 제한 무시
       }
     }
 
-    async function handleUnlockSubmit(event) {
-      if (event) event.preventDefault();
-      const inputEl = document.getElementById('gatePasswordInput');
-      const errEl = document.getElementById('passwordErrorMsg');
-      if (!inputEl) return;
-
-      const entered = inputEl.value;
-      if (!entered) {
-        if (errEl) {
-          errEl.textContent = '패스워드를 입력해 주세요.';
-          errEl.classList.remove('hidden');
-        }
+    function initPasswordGate() {
+      if (isAnyBannerViewActive()) {
+        setUnlockedState(true);
         return;
       }
 
-      const enteredHash = await computeSha256Hex(entered);
-      const expectedHash = getConfiguredPasscodeHash();
-      const isDefaultMatch =
-        expectedHash === BUILTIN_DEFAULT_PASSCODE_HASH && entered === DEFAULT_PASSCODE_PLAIN;
+      let alreadyUnlocked = false;
+      try {
+        alreadyUnlocked = window.sessionStorage.getItem(PASSCODE_SESSION_KEY) === '1';
+      } catch (err) {
+        alreadyUnlocked = false;
+      }
 
-      if (enteredHash === expectedHash || isDefaultMatch) {
-        setAppLockedState(false);
-        showToast('패스워드가 확인되어 화면 잠금이 해제되었습니다.');
+      if (alreadyUnlocked) {
+        setUnlockedState(true);
       } else {
-        if (errEl) {
-          errEl.textContent = '패스워드가 일치하지 않습니다. 다시 확인해 주세요.';
-          errEl.classList.remove('hidden');
+        setUnlockedState(false);
+        const inputEl = document.getElementById('gatePasswordInput');
+        if (inputEl) {
+          setTimeout(() => inputEl.focus(), 40);
         }
-        inputEl.focus();
       }
-    }
-
-    function quickFillDefaultPasscode() {
-      const inputEl = document.getElementById('gatePasswordInput');
-      const errEl = document.getElementById('passwordErrorMsg');
-      if (inputEl) {
-        inputEl.type = 'text';
-        const visLabel = document.getElementById('gateVisibilityLabel');
-        if (visLabel) visLabel.textContent = '숨김';
-        inputEl.value = DEFAULT_PASSCODE_PLAIN;
-        inputEl.focus();
-      }
-      if (errEl) errEl.classList.add('hidden');
     }
 
     function toggleGatePasswordVisibility() {
       const inputEl = document.getElementById('gatePasswordInput');
       const labelEl = document.getElementById('gateVisibilityLabel');
       if (!inputEl) return;
-      const isPw = inputEl.type === 'password';
-      inputEl.type = isPw ? 'text' : 'password';
-      if (labelEl) labelEl.textContent = isPw ? '숨김' : '보기';
+      const nextIsText = inputEl.type === 'password';
+      inputEl.type = nextIsText ? 'text' : 'password';
+      if (labelEl) {
+        labelEl.textContent = nextIsText ? '숨기기' : '표시';
+      }
     }
 
-    function toggleChangePasscodePanel() {
-      const panel = document.getElementById('changePasscodePanel');
-      if (panel) panel.classList.toggle('hidden');
-    }
+    async function handlePasswordUnlock(event) {
+      if (event) event.preventDefault();
+      const inputEl = document.getElementById('gatePasswordInput');
+      const errEl = document.getElementById('gateErrorMessage');
+      if (!inputEl) return;
 
-    async function saveNewPasscodeHash() {
-      const newInput = document.getElementById('newPasscodeInput');
-      if (!newInput) return;
-      const nextPass = newInput.value.trim();
-      if (nextPass.length < 2) {
-        showToast('새 패스워드를 2자 이상 입력해 주세요.');
+      const entered = inputEl.value;
+      if (!entered || entered.trim() === '') {
+        if (errEl) {
+          errEl.textContent = '패스워드를 입력해 주세요.';
+          errEl.classList.remove('hidden');
+        }
+        inputEl.focus();
         return;
       }
-      const nextHash = await computeSha256Hex(nextPass);
+
+      const isValid = await verifyPasscodeInput(entered);
+      if (isValid) {
+        if (errEl) errEl.classList.add('hidden');
+        inputEl.value = '';
+        inputEl.type = 'password';
+        const labelEl = document.getElementById('gateVisibilityLabel');
+        if (labelEl) labelEl.textContent = '표시';
+        setUnlockedState(true);
+        showToast('잠금이 해제되었습니다.');
+      } else {
+        if (errEl) {
+          errEl.textContent = '패스워드가 일치하지 않습니다. 다시 입력해 주세요.';
+          errEl.classList.remove('hidden');
+        }
+        inputEl.focus();
+        inputEl.select();
+      }
+    }
+
+    function lockPageNow() {
+      if (isAnyBannerViewActive()) {
+        showToast('공유 배너 화면에서는 잠금 없이 바로 표시됩니다.');
+        return;
+      }
+      const inputEl = document.getElementById('gatePasswordInput');
+      const errEl = document.getElementById('gateErrorMessage');
+      const labelEl = document.getElementById('gateVisibilityLabel');
+      if (inputEl) {
+        inputEl.value = '';
+        inputEl.type = 'password';
+      }
+      if (labelEl) labelEl.textContent = '표시';
+      if (errEl) errEl.classList.add('hidden');
+      setUnlockedState(false);
+      if (inputEl) {
+        setTimeout(() => inputEl.focus(), 40);
+      }
+    }
+
+    function openPasscodeModal() {
+      const modal = document.getElementById('passcodeChangeModal');
+      const errEl = document.getElementById('passcodeModalError');
+      if (errEl) {
+        errEl.textContent = '';
+        errEl.classList.add('hidden');
+      }
+      ['currentPasscodeInput', 'newPasscodeInput', 'confirmPasscodeInput'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closePasscodeModal() {
+      const modal = document.getElementById('passcodeChangeModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function handlePasscodeUpdate(event) {
+      event.preventDefault();
+      const currEl = document.getElementById('currentPasscodeInput');
+      const nextEl = document.getElementById('newPasscodeInput');
+      const confEl = document.getElementById('confirmPasscodeInput');
+      const errEl = document.getElementById('passcodeModalError');
+      if (!currEl || !nextEl || !confEl || !errEl) return;
+
+      const isCurrentValid = await verifyPasscodeInput(currEl.value);
+      if (!isCurrentValid) {
+        errEl.textContent = '현재 비밀번호가 올바르지 않습니다.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (nextEl.value.trim().length < 2) {
+        errEl.textContent = '새 비밀번호는 2자 이상 입력해 주세요.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (nextEl.value !== confEl.value) {
+        errEl.textContent = '새 비밀번호 확인 값이 일치하지 않습니다.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const nextHash = await computePasscodeHash(nextEl.value);
       try {
         window.localStorage.setItem(PASSCODE_HASH_STORAGE_KEY, nextHash);
       } catch (err) {
-        // 무시
+        // 스토리지 제한 무시
       }
-      newInput.value = '';
-      setAppLockedState(false);
-      showToast('새 패스워드가 SHA-256 해시로 저장되었습니다.');
+      errEl.classList.add('hidden');
+      closePasscodeModal();
+      showToast('접속 비밀번호가 변경되었습니다.');
     }
 
     function resetPasscodeToDefault() {
       try {
         window.localStorage.removeItem(PASSCODE_HASH_STORAGE_KEY);
       } catch (err) {
-        // 무시
+        // 스토리지 제한 무시
       }
-      setAppLockedState(false);
-      showToast('패스워드가 기본값(2026)으로 복원되었습니다.');
-    }
-
-    function lockApplicationNow() {
-      setAppLockedState(true);
-      showToast('화면이 블러 잠금 상태로 전환되었습니다.');
+      closePasscodeModal();
+      showToast('접속 비밀번호가 기본값(2026)으로 재설정되었습니다.');
     }
 
     function getActiveSlots() {
@@ -1245,7 +1261,7 @@
      */
     function buildSharePayload(bannerType = 'settlement') {
       return {
-        v: 2,
+        v: 3,
         scenario: activeScenarioKey,
         defaultMonths: defaultContractMonths,
         slots: getActiveSlots().map((s) => ({
@@ -1341,15 +1357,12 @@
             if (Array.isArray(parsed.scenarioSlotsMap.todayCase) && parsed.scenarioSlotsMap.todayCase.length > 0) {
               scenarioSlotsMap.todayCase = cloneSlots(parsed.scenarioSlotsMap.todayCase, defaultContractMonths);
             }
-            const legacyBase = parsed.scenarioSlotsMap.initialBase || parsed.scenarioSlotsMap.baseCase;
-            if (Array.isArray(legacyBase) && legacyBase.length > 0) {
-              scenarioSlotsMap.initialBase = cloneSlots(legacyBase, defaultContractMonths);
+            if (Array.isArray(parsed.scenarioSlotsMap.initialBase) && parsed.scenarioSlotsMap.initialBase.length > 0) {
+              scenarioSlotsMap.initialBase = cloneSlots(parsed.scenarioSlotsMap.initialBase, defaultContractMonths);
             }
           }
           if (parsed && typeof parsed.activeScenarioKey === 'string') {
-            if (parsed.activeScenarioKey === 'baseCase') {
-              activeScenarioKey = 'initialBase';
-            } else if (parsed.activeScenarioKey === 'initialBase' || parsed.activeScenarioKey === 'todayCase') {
+            if (parsed.activeScenarioKey === 'initialBase' || parsed.activeScenarioKey === 'todayCase') {
               activeScenarioKey = parsed.activeScenarioKey;
             }
           }
@@ -1387,7 +1400,7 @@
             if (typeof decoded.defaultMonths !== 'undefined') {
               defaultContractMonths = clampMonths(decoded.defaultMonths, 2);
             }
-            const targetKey = (decoded.scenario === 'initialBase' || decoded.scenario === 'baseCase')
+            const targetKey = decoded.scenario === 'initialBase'
               ? 'initialBase'
               : (decoded.scenario === 'todayCase' ? 'todayCase' : activeScenarioKey);
             activeScenarioKey = targetKey;
@@ -1432,6 +1445,9 @@
     function applyBannerModes() {
       document.body.classList.toggle('banner-only', Boolean(isBannerOnlyMode && !isTableBannerOnlyMode));
       document.body.classList.toggle('table-banner-only', Boolean(isTableBannerOnlyMode));
+      if (isAnyBannerViewActive()) {
+        setUnlockedState(true);
+      }
       syncReadOnlyPolicyNote();
     }
 
@@ -2054,7 +2070,7 @@
         .replace(/"/g, '&quot;');
     }
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const yearEl = document.getElementById('currentYear');
       if (yearEl) yearEl.textContent = new Date().getFullYear();
 
@@ -2065,7 +2081,7 @@
       syncGlobalMonthControlsUI();
       syncPolicyNoteInputUI();
       updateSimulator();
-      await initPasswordGate();
+      initPasswordGate();
     });
   </script>
 </body>
